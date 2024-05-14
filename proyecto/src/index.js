@@ -9,6 +9,8 @@ import ListarUsuario from "./layout/pages/usuarios/listar.usuario";
 import AgregarUsuario from "./layout/pages/usuarios/agregar.usuario";
 import BorrarUsuario from "./layout/pages/usuarios/borrar.usuario";
 import ListarPedido from "./layout/pages/pedidos/listar.pedido"; // Importamos la página ListarPedido
+import EditarHamburguesa from './layout/pages/hamburguesas/editar.hamburguesa';
+
 
 function App() {
   return (
@@ -16,14 +18,15 @@ function App() {
       <Routes >
         <Route path="/" element={<Layout />}>
           {/* Rutas para hamburguesas */}
-          <Route path="/hamburguesas/listar" element={<ListarHamburguesa />} />
+          <Route path="/hamburguesas/listar" element={<ListarHamburguesa />} />n
           <Route path="/hamburguesas/agregar" element={<AgregarHamburguesa />} />
-          <Route path="/hamburguesas/borrar" element={<BorrarHamburguesa />} />
+          <Route path="/hamburguesas/borrar/" element={<BorrarHamburguesa />} />
+          <Route path="/hamburguesas/editar" element={<EditarHamburguesa />} />
 
           {/* Rutas para usuarios */}
           <Route path="/usuarios/listar" element={<ListarUsuario />} />
           <Route path="/usuarios/agregar" element={<AgregarUsuario />} />
-          <Route path="/usuarios/borrar" element={<BorrarUsuario />} />
+          <Route path="/usuarios/borrar/" element={<BorrarUsuario />} />
 
           {/* Ruta para listar pedidos */}
           <Route path="/pedidos/listar" element={<ListarPedido />} />

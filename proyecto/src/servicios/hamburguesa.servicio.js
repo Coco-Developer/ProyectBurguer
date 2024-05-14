@@ -81,3 +81,24 @@ export const eliminarHamburguesa = async (nombre) => {
     throw error;
   }
 };
+
+// Función para obtener una hamburguesa por su ID
+export const obtenerHamburguesaPorId = async (id) => {
+  try {
+    // Obtener todas las hamburguesas
+    const hamburguesas = await listarHamburguesas();
+
+    // Filtrar la hamburguesa por su ID
+    const hamburguesa = hamburguesas.find(h => h.idHamburguesa === id);
+
+    // Verificar si se encontró la hamburguesa
+    if (hamburguesa) {
+      return hamburguesa;
+    } else {
+      throw new Error(`No se encontró una hamburguesa con el ID ${id}`);
+    }
+  } catch (error) {
+    console.error(`Error al obtener la hamburguesa con ID ${id}:`, error.message);
+    throw error;
+  }
+};

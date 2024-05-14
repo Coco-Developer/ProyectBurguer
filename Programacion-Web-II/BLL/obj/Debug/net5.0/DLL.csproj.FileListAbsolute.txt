@@ -29,3 +29,4 @@ C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurg
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\refint\DLL.dll
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.pdb
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\ref\DLL.dll
+C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.sourcelink.json
