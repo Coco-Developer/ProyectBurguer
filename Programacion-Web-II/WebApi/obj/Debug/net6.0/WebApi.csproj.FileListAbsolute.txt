@@ -57,6 +57,7 @@ C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurg
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.csproj.CoreCompileInputs.cache
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.sourcelink.json
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\staticwebassets.build.json
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\staticwebassets.development.json
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\staticwebassets\msbuild.WebApi.Microsoft.AspNetCore.StaticWebAssets.props
@@ -71,4 +72,3 @@ C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurg
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.pdb
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.genruntimeconfig.cache
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\ref\WebApi.dll
-C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\WebApi\obj\Debug\net6.0\WebApi.sourcelink.json

@@ -24,9 +24,9 @@ C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurg
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.AssemblyInfoInputs.cache
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.AssemblyInfo.cs
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.csproj.CoreCompileInputs.cache
+C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.sourcelink.json
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.csproj.Up2Date
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.dll
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\refint\DLL.dll
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.pdb
 C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\ref\DLL.dll
-C:\Users\COCO\Desktop\DESARROLLO\tercer semestre\Programacion Web II\ProyectBurguer\Programacion-Web-II\BLL\obj\Debug\net5.0\DLL.sourcelink.json

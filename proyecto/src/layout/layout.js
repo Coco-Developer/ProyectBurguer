@@ -1,23 +1,32 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled, Box } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 
 // Estilo personalizado para el AppBar
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  // Ajustamos el padding para dar espacio a los elementos internos
   padding: theme.spacing(1, 2),
 }));
 
 // Personalizamos el estilo del menú desplegable
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: '#34495e', // Color de fondo del menú
+    backgroundColor: '#34495e',
   },
   '& .MuiMenuItem-root': {
-    color: '#ffffff', // Color del texto de los elementos del menú
+    color: '#ffffff',
   },
 }));
+
+// Estilo para el contenedor del fondo
+const BackgroundContainer = styled(Box)({
+  height: '5%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#black',
+});
 
 function Layout({ children }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -68,11 +77,15 @@ function Layout({ children }) {
           </Typography>
         </Toolbar>
       </StyledAppBar>
-      {children}
-     <Outlet />
+      <BackgroundContainer>
+        <Typography variant="h1" component="div" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: '20px' }}>
+          WELCOME!!
+        </Typography>
+        {children}
+      </BackgroundContainer>
+      <Outlet />
     </div>
   );
 }
 
 export default Layout;
-
