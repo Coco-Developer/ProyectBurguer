@@ -1,76 +1,70 @@
-﻿using DLL;
-using LibreriaDeClases;
+﻿using LibreriaDeClases;
+using DLL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
-namespace WebAPI.Controllers
+namespace WebApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class IngredientesController : ControllerBase
     {
-        private readonly MyDbContext _context;
+        private readonly IngredienteDLL _ingredienteDLL;
 
-        public IngredientesController(MyDbContext context)
+        public IngredientesController(IngredienteDLL ingredienteDLL)
         {
-            _context = context;
+            _ingredienteDLL = ingredienteDLL;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Ingrediente>>> ObtenerTodosLosIngredientes()
+        public async Task<IActionResult> ObtenerTodosLosIngredientes()
         {
-            var ingredientes = await _context.Ingredientes.ToListAsync();
+            var ingredientes = await _ingredienteDLL.ObtenerTodosLosIngredientesAsync();
             return Ok(ingredientes);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Ingrediente>> ObtenerIngredientePorId(int id)
+        public async Task<IActionResult> ObtenerIngredientePorId(int id)
         {
-            var ingrediente = await _context.Ingredientes.FindAsync(id);
+            var ingrediente = await _ingredienteDLL.ObtenerIngredientePorIdAsync(id);
             if (ingrediente == null)
-            {
                 return NotFound();
-            }
             return Ok(ingrediente);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearIngrediente([FromBody] Ingrediente ingrediente)
+        public async Task<IActionResult> AgregarIngrediente(Ingrediente ingrediente)
         {
-            _context.Ingredientes.Add(ingrediente);
-            await _context.SaveChangesAsync();
-            return Ok();
+            await _ingredienteDLL.AgregarIngredienteAsync(ingrediente);
+            return CreatedAtAction(nameof(ObtenerIngredientePorId), new { id = ingrediente.Id }, ingrediente);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarIngrediente(int id, [FromBody] Ingrediente ingrediente)
+        public async Task<IActionResult> ActualizarIngrediente(int id, Ingrediente ingrediente)
         {
-            var ingredienteExistente = await _context.Ingredientes.FindAsync(id);
-            if (ingredienteExistente == null)
+            if (id != ingrediente.Id)
+                return BadRequest();
+
+            try
+            {
+                await _ingredienteDLL.ActualizarIngredienteAsync(id, ingrediente);
+            }
+            catch (ArgumentException)
             {
                 return NotFound();
             }
 
-            ingredienteExistente.Nombre = ingrediente.Nombre;
-
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarIngrediente(int id)
         {
-            var ingrediente = await _context.Ingredientes.FindAsync(id);
-            if (ingrediente == null)
-            {
+            var result = await _ingredienteDLL.EliminarIngredienteAsync(id);
+            if (!result)
                 return NotFound();
-            }
-
-            _context.Ingredientes.Remove(ingrediente);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
     }
 }

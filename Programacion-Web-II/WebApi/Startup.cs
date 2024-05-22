@@ -40,6 +40,7 @@ namespace WebApi
             services.AddScoped<HamburguesaDLL>(); // Registrar HamburguesaDLL como un servicio
             services.AddScoped<UsuarioDLL>(); // Registrar UsuarioDLL como un servicio
             services.AddScoped<PedidoDLL>(); // Registrar PedidoDLL como un servicio
+            services.AddScoped<IngredienteDLL>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

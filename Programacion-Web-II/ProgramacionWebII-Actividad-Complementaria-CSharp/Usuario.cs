@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+
 
 namespace LibreriaDeClases
 {
+
     public class Usuario
     {
         [Key]
@@ -10,8 +13,16 @@ namespace LibreriaDeClases
 
         [Required]
         [MaxLength(100)]
-        public string Nombre { get; set; }
+        public required string Nombre { get; set; }
 
-        public List<Pedido> Pedidos { get; set; }
+        [Required]
+        [MaxLength(200)]
+        public required string Direccion { get; set; }
+
+        [Required]
+        [MaxLength(15)]
+        public required string Telefono { get; set; }
+
+        public List<Pedido> Pedidos { get; set; } = new List<Pedido>();
     }
 }

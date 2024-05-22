@@ -1,79 +1,70 @@
-﻿using DLL;
-using LibreriaDeClases;
+﻿using LibreriaDeClases;
+using DLL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Threading.Tasks;
 
-namespace WebAPI.Controllers
+namespace WebApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class HamburguesasController : ControllerBase
     {
-        private readonly MyDbContext _context;
+        private readonly HamburguesaDLL _hamburguesaDLL;
 
-        public HamburguesasController(MyDbContext context)
+        public HamburguesasController(HamburguesaDLL hamburguesaDLL)
         {
-            _context = context;
+            _hamburguesaDLL = hamburguesaDLL;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Hamburguesa>>> ObtenerTodasLasHamburguesas()
+        public async Task<IActionResult> ObtenerTodasLasHamburguesas()
         {
-            var hamburguesas = await _context.Hamburguesas.Include(h => h.Ingredientes).ToListAsync();
+            var hamburguesas = await _hamburguesaDLL.ObtenerTodasLasHamburguesasAsync();
             return Ok(hamburguesas);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Hamburguesa>> ObtenerHamburguesaPorId(int id)
+        public async Task<IActionResult> ObtenerHamburguesaPorId(int id)
         {
-            var hamburguesa = await _context.Hamburguesas.Include(h => h.Ingredientes).FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+            var hamburguesa = await _hamburguesaDLL.ObtenerHamburguesaPorIdAsync(id);
             if (hamburguesa == null)
-            {
                 return NotFound();
-            }
             return Ok(hamburguesa);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearHamburguesa([FromBody] Hamburguesa hamburguesa)
+        public async Task<IActionResult> AgregarHamburguesa(Hamburguesa hamburguesa)
         {
-            _context.Hamburguesas.Add(hamburguesa);
-            await _context.SaveChangesAsync();
-            return Ok();
+            await _hamburguesaDLL.AgregarHamburguesaAsync(hamburguesa);
+            return CreatedAtAction(nameof(ObtenerHamburguesaPorId), new { id = hamburguesa.Id }, hamburguesa);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarHamburguesa(int id, [FromBody] Hamburguesa hamburguesa)
+        public async Task<IActionResult> ActualizarHamburguesa(int id, Hamburguesa hamburguesa)
         {
-            var hamburguesaExistente = await _context.Hamburguesas.Include(h => h.Ingredientes).FirstOrDefaultAsync(h => h.IdHamburguesa == id);
-            if (hamburguesaExistente == null)
+            if (id != hamburguesa.Id)
+                return BadRequest();
+
+            try
+            {
+                await _hamburguesaDLL.ActualizarHamburguesaAsync(id, hamburguesa);
+            }
+            catch (ArgumentException)
             {
                 return NotFound();
             }
 
-            hamburguesaExistente.Nombre = hamburguesa.Nombre;
-            hamburguesaExistente.Precio = hamburguesa.Precio;
-            hamburguesaExistente.Ingredientes = hamburguesa.Ingredientes;
-
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarHamburguesa(int id)
         {
-            var hamburguesa = await _context.Hamburguesas.FindAsync(id);
-            if (hamburguesa == null)
-            {
+            var result = await _hamburguesaDLL.EliminarHamburguesaAsync(id);
+            if (!result)
                 return NotFound();
-            }
-
-            _context.Hamburguesas.Remove(hamburguesa);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -15,36 +15,27 @@ namespace DLL
             _context = context;
         }
 
-        public MyDbContext GetContext()
-        {
-            return _context;
-        }
-
-        // Método para agregar una nueva hamburguesa
         public async Task AgregarHamburguesaAsync(Hamburguesa hamburguesa)
         {
             _context.Hamburguesas.Add(hamburguesa);
             await _context.SaveChangesAsync();
         }
 
-        // Método para obtener todas las hamburguesas con sus ingredientes
         public async Task<List<Hamburguesa>> ObtenerTodasLasHamburguesasAsync()
         {
             return await _context.Hamburguesas.Include(h => h.Ingredientes).ToListAsync();
         }
 
-        // Método para obtener una hamburguesa por su ID con sus ingredientes
         public async Task<Hamburguesa> ObtenerHamburguesaPorIdAsync(int id)
         {
             return await _context.Hamburguesas.Include(h => h.Ingredientes)
-                .FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+                .FirstOrDefaultAsync(h => h.Id == id);
         }
 
-        // Método para actualizar una hamburguesa existente
         public async Task ActualizarHamburguesaAsync(int id, Hamburguesa hamburguesaActualizada)
         {
             var hamburguesaExistente = await _context.Hamburguesas.Include(h => h.Ingredientes)
-                .FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+                .FirstOrDefaultAsync(h => h.Id == id);
 
             if (hamburguesaExistente != null)
             {
@@ -61,7 +52,6 @@ namespace DLL
             }
         }
 
-        // Método para eliminar una hamburguesa por su ID
         public async Task<bool> EliminarHamburguesaAsync(int id)
         {
             var hamburguesa = await _context.Hamburguesas.FindAsync(id);

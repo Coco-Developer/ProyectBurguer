@@ -11,8 +11,8 @@ namespace LibreriaDeClases
 
         public DateTime Fecha { get; set; }
 
-        public required Hamburguesa Hamburugesa { get; set; }
-        public int HamburguesaId { get; set; }
+     
+        public List<Hamburguesa> Hamburguesas { get; set; } = new List<Hamburguesa>();
 
         public int UsuarioId { get; set; }
         public required Usuario Usuario { get; set; }

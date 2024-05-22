@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace LibreriaDeClases
 {
@@ -9,6 +11,9 @@ namespace LibreriaDeClases
 
         [Required]
         [MaxLength(100)]
-        public string Nombre { get; set; }
+        public required string Nombre { get; set; }
+
+        [Required]
+        public decimal Precio { get; set; }
     }
 }

@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace DLL
@@ -18,12 +17,13 @@ namespace DLL
 
         public async Task<List<Pedido>> ObtenerTodosLosPedidosAsync()
         {
-            return await _context.Pedidos.ToListAsync();
+            return await _context.Pedidos.Include(p => p.Hamburguesas).Include(p => p.Usuario).ToListAsync();
         }
 
         public async Task<Pedido> ObtenerPedidoPorIdAsync(int id)
         {
-            return await _context.Pedidos.FindAsync(id);
+            return await _context.Pedidos.Include(p => p.Hamburguesas).Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task AgregarPedidoAsync(Pedido pedido)
@@ -34,11 +34,16 @@ namespace DLL
 
         public async Task ActualizarPedidoAsync(int id, Pedido pedidoActualizado)
         {
-            var pedidoExistente = await _context.Pedidos.FindAsync(id);
+            var pedidoExistente = await _context.Pedidos.Include(p => p.Hamburguesas).Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (pedidoExistente != null)
             {
                 pedidoExistente.Fecha = pedidoActualizado.Fecha;
-                pedidoExistente.Hamburugesa = pedidoActualizado.Hamburugesa;
+                pedidoExistente.Hamburguesas = pedidoActualizado.Hamburguesas;
+                pedidoExistente.UsuarioId = pedidoActualizado.UsuarioId;
+
+                _context.Pedidos.Update(pedidoExistente);
                 await _context.SaveChangesAsync();
             }
             else

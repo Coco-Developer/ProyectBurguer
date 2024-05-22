@@ -1,78 +1,70 @@
-﻿using DLL;
-using LibreriaDeClases;
+﻿using LibreriaDeClases;
+using DLL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class UsuarioController : ControllerBase
+    [ApiController]
+    public class UsuariosController : ControllerBase
     {
-        private readonly MyDbContext _context;
+        private readonly UsuarioDLL _usuarioDLL;
 
-        public UsuarioController(MyDbContext context)
+        public UsuariosController(UsuarioDLL usuarioDLL)
         {
-            _context = context;
+            _usuarioDLL = usuarioDLL;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Usuario>>> ObtenerTodosLosUsuarios()
+        public async Task<IActionResult> ObtenerTodosLosUsuarios()
         {
-            var usuarios = await _context.Usuarios.ToListAsync();
+            var usuarios = await _usuarioDLL.ObtenerTodosLosUsuariosAsync();
             return Ok(usuarios);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Usuario>> ObtenerUsuarioPorId(int id)
+        public async Task<IActionResult> ObtenerUsuarioPorId(int id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
+            var usuario = await _usuarioDLL.ObtenerUsuarioPorIdAsync(id);
             if (usuario == null)
-            {
                 return NotFound();
-            }
             return Ok(usuario);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearUsuario([FromBody] Usuario usuario)
+        public async Task<IActionResult> AgregarUsuario(Usuario usuario)
         {
-            _context.Usuarios.Add(usuario);
-            await _context.SaveChangesAsync();
-            return Ok();
+            await _usuarioDLL.AgregarUsuarioAsync(usuario);
+            return CreatedAtAction(nameof(ObtenerUsuarioPorId), new { id = usuario.Id }, usuario);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Usuario usuario)
+        public async Task<IActionResult> ActualizarUsuario(int id, Usuario usuario)
         {
-            var usuarioExistente = await _context.Usuarios.FindAsync(id);
-            if (usuarioExistente == null)
+            if (id != usuario.Id)
+                return BadRequest();
+
+            try
+            {
+                await _usuarioDLL.ActualizarUsuarioAsync(id, usuario);
+            }
+            catch (ArgumentException)
             {
                 return NotFound();
             }
 
-            usuarioExistente.Nombre = usuario.Nombre;
-            // Actualiza otros campos si es necesario
-
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarUsuario(int id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null)
-            {
+            var result = await _usuarioDLL.EliminarUsuarioAsync(id);
+            if (!result)
                 return NotFound();
-            }
-
-            _context.Usuarios.Remove(usuario);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
     }
 }

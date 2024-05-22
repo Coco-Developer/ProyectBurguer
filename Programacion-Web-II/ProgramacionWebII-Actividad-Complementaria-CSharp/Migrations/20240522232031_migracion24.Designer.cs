@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20240522011833_migracion22")]
-    partial class migracion22
+    [Migration("20240522232031_migracion24")]
+    partial class migracion24
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,13 +25,43 @@ namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("HamburguesaIngrediente", b =>
+                {
+                    b.Property<int>("HamburguesaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IngredientesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("HamburguesaId", "IngredientesId");
+
+                    b.HasIndex("IngredientesId");
+
+                    b.ToTable("HamburguesaIngrediente");
+                });
+
+            modelBuilder.Entity("HamburguesaPedido", b =>
+                {
+                    b.Property<int>("HamburguesasId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PedidoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("HamburguesasId", "PedidoId");
+
+                    b.HasIndex("PedidoId");
+
+                    b.ToTable("HamburguesaPedido");
+                });
+
             modelBuilder.Entity("LibreriaDeClases.Hamburguesa", b =>
                 {
-                    b.Property<int>("IdHamburguesa")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdHamburguesa"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -41,7 +71,7 @@ namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
                     b.Property<decimal>("Precio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("IdHamburguesa");
+                    b.HasKey("Id");
 
                     b.ToTable("Hamburguesas");
                 });
@@ -54,17 +84,15 @@ namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("HamburguesaIdHamburguesa")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("Id");
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.HasIndex("HamburguesaIdHamburguesa");
+                    b.HasKey("Id");
 
                     b.ToTable("Ingredientes");
                 });
@@ -80,15 +108,10 @@ namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("HamburguesaId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("HamburguesaId");
 
                     b.HasIndex("UsuarioId");
 
@@ -103,45 +126,65 @@ namespace ProgramacionWebII_Actividad_Complementaria_CSharp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("LibreriaDeClases.Ingrediente", b =>
+            modelBuilder.Entity("HamburguesaIngrediente", b =>
                 {
                     b.HasOne("LibreriaDeClases.Hamburguesa", null)
-                        .WithMany("Ingredientes")
-                        .HasForeignKey("HamburguesaIdHamburguesa");
-                });
-
-            modelBuilder.Entity("LibreriaDeClases.Pedido", b =>
-                {
-                    b.HasOne("LibreriaDeClases.Hamburguesa", "Hamburugesa")
                         .WithMany()
                         .HasForeignKey("HamburguesaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LibreriaDeClases.Ingrediente", null)
+                        .WithMany()
+                        .HasForeignKey("IngredientesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HamburguesaPedido", b =>
+                {
+                    b.HasOne("LibreriaDeClases.Hamburguesa", null)
+                        .WithMany()
+                        .HasForeignKey("HamburguesasId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LibreriaDeClases.Pedido", null)
+                        .WithMany()
+                        .HasForeignKey("PedidoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("LibreriaDeClases.Pedido", b =>
+                {
                     b.HasOne("LibreriaDeClases.Usuario", "Usuario")
                         .WithMany("Pedidos")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hamburugesa");
-
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("LibreriaDeClases.Hamburguesa", b =>
-                {
-                    b.Navigation("Ingredientes");
                 });
 
             modelBuilder.Entity("LibreriaDeClases.Usuario", b =>

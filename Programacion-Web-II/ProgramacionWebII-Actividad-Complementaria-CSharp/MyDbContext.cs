@@ -15,17 +15,20 @@ namespace DLL
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configuración de la clase Hamburguesa
             modelBuilder.Entity<Hamburguesa>()
-                .Property(h => h.IdHamburguesa)
-                .ValueGeneratedOnAdd();
+                .HasMany(h => h.Ingredientes)
+                .WithMany();
 
-            // Configuración de la clase Ingrediente
-            modelBuilder.Entity<Ingrediente>()
-                .Property(i => i.Id)
-                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Pedido>()
+                .HasMany(p => p.Hamburguesas)
+                .WithMany();
 
-
+            modelBuilder.Entity<Pedido>()
+                .HasOne(p => p.Usuario)
+                .WithMany(u => u.Pedidos)
+                .HasForeignKey(p => p.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
+    
 }
