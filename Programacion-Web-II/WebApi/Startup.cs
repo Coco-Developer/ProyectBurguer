@@ -1,10 +1,12 @@
 using DLL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using LibreriaDeClases;
 
 namespace WebApi
 {
@@ -17,10 +19,8 @@ namespace WebApi
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // Este método se llama en tiempo de ejecución. Utiliza este método para agregar servicios al contenedor.
         public void ConfigureServices(IServiceCollection services)
-
-
         {
             services.AddCors(options =>
             {
@@ -33,7 +33,14 @@ namespace WebApi
                     });
             });
 
+            // Configurar DbContext para usar SQL Server
+            services.AddDbContext<MyDbContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddScoped<HamburguesaDLL>(); // Registrar HamburguesaDLL como un servicio
+            services.AddScoped<UsuarioDLL>(); // Registrar UsuarioDLL como un servicio
+            services.AddScoped<PedidoDLL>(); // Registrar PedidoDLL como un servicio
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -41,7 +48,7 @@ namespace WebApi
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Este método se llama en tiempo de ejecución. Utiliza este método para configurar la canalización de solicitud HTTP.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -50,7 +57,6 @@ namespace WebApi
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApi v1"));
             }
-
 
             app.UseCors("AllowReactApp");
 

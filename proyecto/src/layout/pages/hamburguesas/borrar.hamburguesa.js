@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { eliminarHamburguesa } from '../../../servicios/hamburguesa.servicio';
 
 function BorrarHamburguesa() {
-  const { nombre } = useParams(); // Obtenemos el parámetro nombre de los parámetros de la URL
+  const { id } = useParams(); // Obtenemos el parámetro ID de los parámetros de la URL
   const [open, setOpen] = useState(false); // Estado para controlar la apertura/cierre del diálogo de confirmación
 
   const handleOpen = () => {
@@ -17,11 +17,11 @@ function BorrarHamburguesa() {
 
   const handleEliminar = async () => {
     try {
-      if (nombre) { // Cambiado de id a nombre
-        await eliminarHamburguesa(nombre);
+      if (id) {
+        await eliminarHamburguesa(id);
         handleClose();
       } else {
-        console.error('Nombre de hamburguesa no definido');
+        console.error('ID de hamburguesa no definido');
       }
     } catch (error) {
       console.error('Error al eliminar la hamburguesa:', error.message);
@@ -45,7 +45,7 @@ function BorrarHamburguesa() {
           <Button onClick={handleClose} color="primary">
             Cancelar
           </Button>
-          <Button onClick={() => handleEliminar()} color="error">
+          <Button onClick={handleEliminar} color="error">
             Eliminar
           </Button>
         </DialogActions>
@@ -55,4 +55,3 @@ function BorrarHamburguesa() {
 }
 
 export default BorrarHamburguesa;
-

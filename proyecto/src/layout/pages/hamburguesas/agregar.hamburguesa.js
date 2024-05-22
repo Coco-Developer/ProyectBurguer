@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { Button, TextField, Snackbar, Box } from '@mui/material';
-import { agregarHamburguesa } from '../../../servicios/hamburguesa.servicio';
+import React, { useState, useEffect } from 'react';
+import { Button, TextField, Snackbar, Box, Typography, MenuItem } from '@mui/material';
+import { agregarHamburguesa, listarIngredientes } from '../../../servicios/hamburguesa.servicio';
 
 function AgregarHamburguesa() {
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState('');
+  const [ingredientes, setIngredientes] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [ingredientesDisponibles, setIngredientesDisponibles] = useState([]);
+
+  useEffect(() => {
+    listarIngredientes()
+      .then(data => setIngredientesDisponibles(data))
+      .catch(error => console.error('Error al obtener los ingredientes:', error));
+  }, []);
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -17,25 +25,34 @@ function AgregarHamburguesa() {
   };
 
   const handleChangePrecio = (event) => {
-    // Validar que el valor ingresado sea un número
     const inputPrice = event.target.value;
     if (!isNaN(inputPrice)) {
       setPrecio(inputPrice);
     }
   };
 
+  const handleChangeIngredientes = (event) => {
+    const { value } = event.target;
+    setIngredientes(value); // Solo establecer el array de IDs de ingredientes
+  };
+  
+
   const handleSubmit = async () => {
     try {
-      // Validar que se haya ingresado un nombre y un precio
-      if (nombre && precio) {
-        await agregarHamburguesa({ nombre, precio });
+      if (nombre && precio && ingredientes.length > 0) {
+        // Enviar solo los IDs de ingredientes al servicio
+        await agregarHamburguesa({ 
+          nombre, 
+          precio, 
+          ingredientes: ingredientes.map(ingrediente => ({ id: ingrediente.id, nombre: ingrediente.nombre })) 
+        });
         setMensaje('Hamburguesa agregada correctamente');
         setOpenSnackbar(true);
-        // Limpiar los campos después de agregar la hamburguesa
         setNombre('');
         setPrecio('');
+        setIngredientes([]);
       } else {
-        setMensaje('Por favor ingresa el nombre y el precio de la hamburguesa');
+        setMensaje('Por favor ingresa el nombre, el precio y al menos un ingrediente de la hamburguesa');
         setOpenSnackbar(true);
       }
     } catch (error) {
@@ -45,22 +62,16 @@ function AgregarHamburguesa() {
     }
   };
 
-  const handleKeyPress = (event) => {
-    // Verificar si la tecla presionada es "Enter"
-    if (event.key === 'Enter') {
-      handleSubmit();
-    }
-  };
-
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
       <Box sx={{ width: '50%', textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', color: '#333' }}>Agregar Hamburguesa</h2>
+        <Typography variant="h4" gutterBottom>
+          Agregar Hamburguesa
+        </Typography>
         <TextField
           label="Nombre"
           value={nombre}
           onChange={handleChangeNombre}
-          onKeyPress={handleKeyPress}
           fullWidth
           margin="normal"
         />
@@ -68,10 +79,34 @@ function AgregarHamburguesa() {
           label="Precio"
           value={precio}
           onChange={handleChangePrecio}
-          onKeyPress={handleKeyPress}
           fullWidth
           margin="normal"
         />
+        <TextField
+          select
+          label="Ingredientes"
+          value={ingredientes}
+          onChange={handleChangeIngredientes}
+          SelectProps={{
+            multiple: true,
+            MenuProps: {
+              PaperProps: {
+                style: {
+                  maxHeight: 224,
+                  width: 250,
+                },
+              },
+            },
+          }}
+          fullWidth
+          margin="normal"
+        >
+          {ingredientesDisponibles.map((ingrediente) => (
+            <MenuItem key={ingrediente.id} value={ingrediente}>
+              {ingrediente.nombre}
+            </MenuItem>
+          ))}
+        </TextField>
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Agregar
         </Button>

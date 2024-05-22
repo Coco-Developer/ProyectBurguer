@@ -4,7 +4,6 @@ import { TableBody, TableCell, TableRow, Paper, Button, Typography, TableContain
 import { listarHamburguesas } from '../../../servicios/hamburguesa.servicio';
 import BorrarHamburguesa from './borrar.hamburguesa';
 
-
 function ListarHamburguesa() {
   const [hamburguesas, setHamburguesas] = useState([]);
 
@@ -29,22 +28,28 @@ function ListarHamburguesa() {
           <Table>
             <TableHead>
               <TableRow>
-                {/* Agrega la columna de ID */}
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>ID</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Nombre</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Precio</TableCell>
+                <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Ingredientes</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {hamburguesas.map((hamburguesa) => (
                 <TableRow key={hamburguesa.idHamburguesa}>
-                  {/* Agrega la celda para el ID */}
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.idHamburguesa}</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.nombre}</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.precio}</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
-                    <Button component={Link} to={`/hamburguesas/editar/${hamburguesa.idHamburguesa}`} variant="contained" color="primary" style={{ width: '100px', textTransform: 'none' }}>
+                    <ul>
+                      {hamburguesa.ingredientes.map((ingrediente, index) => (
+                        <li key={index}>{ingrediente.nombre}</li>
+                      ))}
+                    </ul>
+                  </TableCell>
+                  <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
+                    <Button component={Link} to={`/hamburguesas/editar/${hamburguesa.idHamburguesa}`} variant="contained" color="primary" style={{ width: '100px', textTransform: 'none', marginRight: '10px' }}>
                       Editar
                     </Button>
                     <BorrarHamburguesa id={hamburguesa.idHamburguesa} />
@@ -55,7 +60,7 @@ function ListarHamburguesa() {
           </Table>
         </TableContainer>
         <Box mt={2} display="flex" justifyContent="center">
-          <Button component={Link} to="/hamburguesas/agregar" variant="contained" color="primary" >
+          <Button component={Link} to="/hamburguesas/agregar" variant="contained" color="primary">
             Agregar Hamburguesa
           </Button>
         </Box>

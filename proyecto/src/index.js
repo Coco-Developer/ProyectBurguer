@@ -20,7 +20,7 @@ function App() {
           {/* Rutas para hamburguesas */}
           <Route path="/hamburguesas/listar" element={<ListarHamburguesa />} />n
           <Route path="/hamburguesas/agregar" element={<AgregarHamburguesa />} />
-          <Route path="/hamburguesas/borrar/" element={<BorrarHamburguesa />} />
+          <Route path="/hamburguesas/borrar/:id" element={<BorrarHamburguesa />} />
           <Route path="/hamburguesas/editar" element={<EditarHamburguesa />} />
 
           {/* Rutas para usuarios */}

@@ -1,85 +1,78 @@
 ﻿using DLL;
 using LibreriaDeClases;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class PedidoController : ControllerBase
     {
-        // GET: /Pedido
-        [HttpGet]
-        public ActionResult<List<Pedido>> Get()
+        private readonly MyDbContext _context;
+
+        public PedidoController(MyDbContext context)
         {
-            // Obtener todos los pedidos
-            var pedidos = PedidoDLL.ObtenerTodosLosPedidos();
-            if (pedidos.Count == 0)
-            {
-                return NotFound("No se encontraron pedidos.");
-            }
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Pedido>>> ObtenerTodosLosPedidos()
+        {
+            var pedidos = await _context.Pedidos.ToListAsync();
             return Ok(pedidos);
         }
 
-        // GET: /Pedido/{id}
         [HttpGet("{id}")]
-        public ActionResult<Pedido> Get(int id)
+        public async Task<ActionResult<Pedido>> ObtenerPedidoPorId(int id)
         {
-            // Obtener un pedido por su ID
-            var pedido = PedidoDLL.ObtenerPedidoPorId(id);
+            var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido == null)
             {
-                return NotFound($"Pedido con ID {id} no encontrado.");
+                return NotFound();
             }
             return Ok(pedido);
         }
 
-        // POST: /Pedido
         [HttpPost]
-        public ActionResult<Pedido> Post([FromBody] Pedido pedido)
+        public async Task<IActionResult> CrearPedido([FromBody] Pedido pedido)
         {
-            // Agregar un nuevo pedido
-            PedidoDLL.AgregarPedido(pedido.UsuarioId, pedido.HamburguesaId, pedido.FechaPedido, pedido.Cantidad);
-            return CreatedAtAction(nameof(Get), new { id = pedido.Id }, pedido);
+            _context.Pedidos.Add(pedido);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
-        // PUT: /Pedido/{id}
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Pedido pedido)
+        public async Task<IActionResult> ActualizarPedido(int id, [FromBody] Pedido pedido)
         {
-            if (id != pedido.Id)
+            var pedidoExistente = await _context.Pedidos.FindAsync(id);
+            if (pedidoExistente == null)
             {
-                return BadRequest("El ID del pedido en el cuerpo de la solicitud no coincide con el ID de la URL.");
+                return NotFound();
             }
 
-            // Actualizar un pedido
-            try
-            {
-                PedidoDLL.ActualizarPedido(pedido);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            pedidoExistente.Fecha = pedido.Fecha;
+            // Actualiza otros campos si es necesario
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
-        // DELETE: /Pedido/{id}
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> EliminarPedido(int id)
         {
-            // Eliminar un pedido por su ID
-            try
+            var pedido = await _context.Pedidos.FindAsync(id);
+            if (pedido == null)
             {
-                PedidoDLL.EliminarPedido(id);
-                return NoContent();
+                return NotFound();
             }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+
+            _context.Pedidos.Remove(pedido);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

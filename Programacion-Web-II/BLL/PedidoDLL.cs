@@ -1,83 +1,62 @@
 ﻿using LibreriaDeClases;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DLL
 {
     public class PedidoDLL
     {
-        // Lista de pedidos con los pedidos predefinidos
-        private static readonly List<Pedido> pedidos = new()
-        {
-            new Pedido(1, 1, DateTime.Now, 2),
-            new Pedido(2, 2, DateTime.Now, 1),
-            new Pedido(3, 3, DateTime.Now, 3)
-        };
+        private readonly MyDbContext _context;
 
-        // Objeto para controlar el acceso a la lista de pedidos de forma segura en entornos multiproceso
-        private static readonly object _bloqueo = new();
-
-        // Método para agregar un pedido
-        public static void AgregarPedido(int usuarioId, int hamburguesaId, DateTime fechaPedido, int cantidad)
+        public PedidoDLL(MyDbContext context)
         {
-            lock (_bloqueo)
+            _context = context;
+        }
+
+        public async Task<List<Pedido>> ObtenerTodosLosPedidosAsync()
+        {
+            return await _context.Pedidos.ToListAsync();
+        }
+
+        public async Task<Pedido> ObtenerPedidoPorIdAsync(int id)
+        {
+            return await _context.Pedidos.FindAsync(id);
+        }
+
+        public async Task AgregarPedidoAsync(Pedido pedido)
+        {
+            _context.Pedidos.Add(pedido);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ActualizarPedidoAsync(int id, Pedido pedidoActualizado)
+        {
+            var pedidoExistente = await _context.Pedidos.FindAsync(id);
+            if (pedidoExistente != null)
             {
-                // Crear un nuevo pedido con el próximo ID
-                var nuevoPedido = new Pedido(usuarioId, hamburguesaId, fechaPedido, cantidad);
-                pedidos.Add(nuevoPedido);
+                pedidoExistente.Fecha = pedidoActualizado.Fecha;
+                pedidoExistente.Hamburugesa = pedidoActualizado.Hamburugesa;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException($"No se encontró ningún pedido con el ID {id}.");
             }
         }
 
-    
-
-        // Método para obtener todos los pedidos
-        public static List<Pedido> ObtenerTodosLosPedidos()
+        public async Task<bool> EliminarPedidoAsync(int id)
         {
-            return pedidos;
-        }
-
-        // Método para obtener un pedido por su ID
-        public static Pedido ObtenerPedidoPorId(int id)
-        {
-            return pedidos.Find(p => p.Id == id);
-        }
-
-        // Método para actualizar un pedido
-        public static void ActualizarPedido(Pedido pedidoActualizado)
-        {
-            lock (_bloqueo)
+            var pedido = await _context.Pedidos.FindAsync(id);
+            if (pedido != null)
             {
-                var pedidoExistente = pedidos.Find(p => p.Id == pedidoActualizado.Id);
-                if (pedidoExistente != null)
-                {
-                    // Actualizar los datos del pedido existente
-                    pedidoExistente.UsuarioId = pedidoActualizado.UsuarioId;
-                    pedidoExistente.HamburguesaId = pedidoActualizado.HamburguesaId;
-                    pedidoExistente.FechaPedido = pedidoActualizado.FechaPedido;
-                    pedidoExistente.Cantidad = pedidoActualizado.Cantidad;
-                }
-                else
-                {
-                    throw new ArgumentException($"No se encontró ningún pedido con el ID {pedidoActualizado.Id}.");
-                }
+                _context.Pedidos.Remove(pedido);
+                await _context.SaveChangesAsync();
+                return true;
             }
-        }
-
-        // Método para eliminar un pedido por su ID
-        public static void EliminarPedido(int id)
-        {
-            lock (_bloqueo)
-            {
-                var pedidoAEliminar = pedidos.Find(p => p.Id == id);
-                if (pedidoAEliminar != null)
-                {
-                    pedidos.Remove(pedidoAEliminar);
-                }
-                else
-                {
-                    throw new ArgumentException($"No se encontró ningún pedido con el ID {id}.");
-                }
-            }
+            return false;
         }
     }
 }

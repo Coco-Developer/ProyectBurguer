@@ -1,62 +1,78 @@
 ﻿using DLL;
 using LibreriaDeClases;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UsuarioController : ControllerBase
     {
-        private readonly UsuarioDLL usuarioDLL;
+        private readonly MyDbContext _context;
 
-        public UsuarioController()
+        public UsuarioController(MyDbContext context)
         {
-            usuarioDLL = new UsuarioDLL();
+            _context = context;
         }
 
-        // GET: /Usuario
         [HttpGet]
-        public ActionResult<List<Usuario>> Get()
+        public async Task<ActionResult<List<Usuario>>> ObtenerTodosLosUsuarios()
         {
-            var usuarios = UsuarioDLL.ObtenerTodosLosUsuarios();
-            if (usuarios.Count == 0)
-            {
-                return NotFound("No se encontraron usuarios.");
-            }
+            var usuarios = await _context.Usuarios.ToListAsync();
             return Ok(usuarios);
         }
 
-        // GET: /Usuario/{id}
         [HttpGet("{id}")]
-        public ActionResult<Usuario> Get(int id)
+        public async Task<ActionResult<Usuario>> ObtenerUsuarioPorId(int id)
         {
-            var usuario = UsuarioDLL.ObtenerUsuarioPorId(id);
+            var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
             {
-                return NotFound($"Usuario con ID {id} no encontrado.");
+                return NotFound();
             }
             return Ok(usuario);
         }
 
-        // POST: /Usuario
         [HttpPost]
-        public ActionResult<Usuario> Post([FromBody] Usuario usuario)
+        public async Task<IActionResult> CrearUsuario([FromBody] Usuario usuario)
         {
-            UsuarioDLL.AgregarUsuario(usuario);
-            return CreatedAtAction(nameof(Get), new { id = usuario.Id }, usuario);
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
-        // DELETE: /Usuario/{id}
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Usuario usuario)
         {
-            if (!UsuarioDLL.EliminarUsuario(id))
+            var usuarioExistente = await _context.Usuarios.FindAsync(id);
+            if (usuarioExistente == null)
             {
-                return NotFound($"Usuario con ID {id} no encontrado.");
+                return NotFound();
             }
-            return NoContent();
+
+            usuarioExistente.Nombre = usuario.Nombre;
+            // Actualiza otros campos si es necesario
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> EliminarUsuario(int id)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            _context.Usuarios.Remove(usuario);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

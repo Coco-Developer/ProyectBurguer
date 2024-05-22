@@ -1,86 +1,77 @@
 ﻿using LibreriaDeClases;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace DLL
 {
     public class HamburguesaDLL
     {
+        private readonly MyDbContext _context;
 
-
-
-        // Lista de hamburguesas con datos preestablecidos
-        private static readonly List<Hamburguesa> hamburguesas = new()
+        public HamburguesaDLL(MyDbContext context)
         {
-            new Hamburguesa("Cheddar", 3599),
-            new Hamburguesa("Vegetariana", 4699),
-            new Hamburguesa("Doble bacon", 5399)
-        };
-        private static readonly object _bloqueo;
-
-        // Método para agregar una hamburguesa
-        public static void AgregarHamburguesa(Hamburguesa hamburguesa)
-        {
-
-            hamburguesas.Add(hamburguesa);
-
+            _context = context;
         }
 
-
-        // Método para obtener todas las hamburguesas
-        public static List<Hamburguesa> ObtenerTodasLasHamburguesas()
+        public MyDbContext GetContext()
         {
-            return hamburguesas;
+            return _context;
         }
 
-        // Método para actualizar una hamburguesa
-        public static void ActualizarHamburguesa(int id, Hamburguesa hamburguesa)
+        // Método para agregar una nueva hamburguesa
+        public async Task AgregarHamburguesaAsync(Hamburguesa hamburguesa)
         {
-            lock (_bloqueo)
+            _context.Hamburguesas.Add(hamburguesa);
+            await _context.SaveChangesAsync();
+        }
+
+        // Método para obtener todas las hamburguesas con sus ingredientes
+        public async Task<List<Hamburguesa>> ObtenerTodasLasHamburguesasAsync()
+        {
+            return await _context.Hamburguesas.Include(h => h.Ingredientes).ToListAsync();
+        }
+
+        // Método para obtener una hamburguesa por su ID con sus ingredientes
+        public async Task<Hamburguesa> ObtenerHamburguesaPorIdAsync(int id)
+        {
+            return await _context.Hamburguesas.Include(h => h.Ingredientes)
+                .FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+        }
+
+        // Método para actualizar una hamburguesa existente
+        public async Task ActualizarHamburguesaAsync(int id, Hamburguesa hamburguesaActualizada)
+        {
+            var hamburguesaExistente = await _context.Hamburguesas.Include(h => h.Ingredientes)
+                .FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+
+            if (hamburguesaExistente != null)
             {
-                // Busca la hamburguesa por su ID
-                var hamburguesaExistente = hamburguesas.FirstOrDefault(h => h.IdHamburguesa == id);
+                hamburguesaExistente.Nombre = hamburguesaActualizada.Nombre;
+                hamburguesaExistente.Precio = hamburguesaActualizada.Precio;
+                hamburguesaExistente.Ingredientes = hamburguesaActualizada.Ingredientes;
 
-                // Verifica si se encontró la hamburguesa
-                if (hamburguesaExistente != null)
-                {
-                    // Actualiza los campos de la hamburguesa existente
-                    hamburguesaExistente.Nombre = hamburguesa.Nombre;
-                    hamburguesaExistente.Precio = hamburguesa.Precio;
-                }
-                else
-                {
-                    throw new ArgumentException($"No se encontró ninguna hamburguesa con el ID {id}.");
-                }
-            }
-        }
-
-
-
-        // Método para eliminar una hamburguesa por su ID
-        public static bool EliminarHamburguesa(int id)
-        {
-            Hamburguesa hamburguesa = hamburguesas.SingleOrDefault(h => h.IdHamburguesa == id);
-            if (hamburguesa != null)
-            {
-                hamburguesas.Remove(hamburguesa);
-                return true;
+                _context.Hamburguesas.Update(hamburguesaExistente);
+                await _context.SaveChangesAsync();
             }
             else
             {
-                return false; // No se encontró la hamburguesa con el ID proporcionado
+                throw new ArgumentException($"No se encontró ninguna hamburguesa con el ID {id}.");
             }
         }
 
-        public static object ObtenerHamburguesaPorId(int id)
+        // Método para eliminar una hamburguesa por su ID
+        public async Task<bool> EliminarHamburguesaAsync(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        public static void ActualizarHamburguesa(Hamburguesa hamburguesa)
-        {
-            throw new NotImplementedException();
+            var hamburguesa = await _context.Hamburguesas.FindAsync(id);
+            if (hamburguesa != null)
+            {
+                _context.Hamburguesas.Remove(hamburguesa);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }

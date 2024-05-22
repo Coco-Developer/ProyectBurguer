@@ -1,43 +1,58 @@
 ﻿using LibreriaDeClases;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DLL
 {
     public class UsuarioDLL
     {
-        private static readonly List<Usuario> usuarios = new();
+        private readonly MyDbContext _context;
 
-        // Constructor estático para inicializar algunos usuarios de muestra
-        static UsuarioDLL()
+        public UsuarioDLL(MyDbContext context)
         {
-            usuarios.Add(new Usuario(DateTime.Parse("1990-01-01"), 31, "Roberto", "Perez"));
-            usuarios.Add(new Usuario(DateTime.Parse("1985-05-05"), 36, "Daniel", "Gomez"));
-            usuarios.Add(new Usuario(DateTime.Parse("1980-10-10"), 41, "Jose", "Ramallo"));
+            _context = context;
         }
 
-        public static List<Usuario> ObtenerTodosLosUsuarios()
+        public async Task<List<Usuario>> ObtenerTodosLosUsuariosAsync()
         {
-            return usuarios;
+            return await _context.Usuarios.ToListAsync();
         }
 
-        public static Usuario ObtenerUsuarioPorId(int id)
+        public async Task<Usuario> ObtenerUsuarioPorIdAsync(int id)
         {
-            return usuarios.Find(u => u.Id == id);
+            return await _context.Usuarios.FindAsync(id);
         }
 
-        public static void AgregarUsuario(Usuario usuario)
+        public async Task AgregarUsuarioAsync(Usuario usuario)
         {
-            // No necesitamos asignar manualmente el Id, ya que se maneja internamente en la clase Usuario
-            usuarios.Add(usuario);
+            _context.Usuarios.Add(usuario);
+            await _context.SaveChangesAsync();
         }
 
-        public static bool EliminarUsuario(int id)
+        public async Task ActualizarUsuarioAsync(int id, Usuario usuarioActualizado)
         {
-            Usuario usuario = usuarios.Find(u => u.Id == id);
+            var usuarioExistente = await _context.Usuarios.FindAsync(id);
+            if (usuarioExistente != null)
+            {
+                usuarioExistente.Nombre = usuarioActualizado.Nombre;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException($"No se encontró ningún usuario con el ID {id}.");
+            }
+        }
+
+        public async Task<bool> EliminarUsuarioAsync(int id)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario != null)
             {
-                usuarios.Remove(usuario);
+                _context.Usuarios.Remove(usuario);
+                await _context.SaveChangesAsync();
                 return true;
             }
             return false;

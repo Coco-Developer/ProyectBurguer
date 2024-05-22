@@ -1,89 +1,79 @@
 ﻿using DLL;
 using LibreriaDeClases;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace WebApi.Controllers
+namespace WebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class HamburguesaController : ControllerBase
+    [Route("api/[controller]")]
+    public class HamburguesasController : ControllerBase
     {
-        private readonly HamburguesaDLL hamburguesaDLL;
+        private readonly MyDbContext _context;
 
-        public HamburguesaController(HamburguesaDLL hamburguesaDLL)
+        public HamburguesasController(MyDbContext context)
         {
-            this.hamburguesaDLL = hamburguesaDLL;
+            _context = context;
         }
 
-        // GET: /Hamburguesa
         [HttpGet]
-        public ActionResult<List<Hamburguesa>> Get()
+        public async Task<ActionResult<List<Hamburguesa>>> ObtenerTodasLasHamburguesas()
         {
-            var hamburguesas = HamburguesaDLL.ObtenerTodasLasHamburguesas();
-            if (hamburguesas.Count == 0)
-            {
-                return NotFound("No se encontraron hamburguesas.");
-            }
+            var hamburguesas = await _context.Hamburguesas.Include(h => h.Ingredientes).ToListAsync();
             return Ok(hamburguesas);
         }
 
-        // GET: /Hamburguesa/{id}
         [HttpGet("{id}")]
-        public ActionResult<Hamburguesa> Get(int id)
+        public async Task<ActionResult<Hamburguesa>> ObtenerHamburguesaPorId(int id)
         {
-            var hamburguesa = HamburguesaDLL.ObtenerHamburguesaPorId(id);
+            var hamburguesa = await _context.Hamburguesas.Include(h => h.Ingredientes).FirstOrDefaultAsync(h => h.IdHamburguesa == id);
             if (hamburguesa == null)
             {
-                return NotFound($"Hamburguesa con ID {id} no encontrada.");
+                return NotFound();
             }
             return Ok(hamburguesa);
         }
 
-        // POST: /Hamburguesa
         [HttpPost]
-        public ActionResult<Hamburguesa> Post([FromBody] Hamburguesa hamburguesa)
+        public async Task<IActionResult> CrearHamburguesa([FromBody] Hamburguesa hamburguesa)
         {
-            // No es necesario proporcionar el ID al agregar una hamburguesa,
-            // ya que es autoincremental y se generará automáticamente
-            HamburguesaDLL.AgregarHamburguesa(hamburguesa);
-            return CreatedAtAction(nameof(Get), new { id = hamburguesa.IdHamburguesa }, hamburguesa);
+            _context.Hamburguesas.Add(hamburguesa);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
-        // PUT: /Hamburguesa/{id}
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Hamburguesa hamburguesa)
+        public async Task<IActionResult> ActualizarHamburguesa(int id, [FromBody] Hamburguesa hamburguesa)
         {
-            // Verificar si la hamburguesa a actualizar tiene el mismo ID que el proporcionado en la URL
-            if (id != hamburguesa.IdHamburguesa)
+            var hamburguesaExistente = await _context.Hamburguesas.Include(h => h.Ingredientes).FirstOrDefaultAsync(h => h.IdHamburguesa == id);
+            if (hamburguesaExistente == null)
             {
-                return BadRequest("El ID de la hamburguesa en el cuerpo de la solicitud no coincide con el ID de la URL.");
+                return NotFound();
             }
 
-            // Actualizar la hamburguesa en la lista
-            try
-            {
-                HamburguesaDLL.ActualizarHamburguesa(hamburguesa);
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            hamburguesaExistente.Nombre = hamburguesa.Nombre;
+            hamburguesaExistente.Precio = hamburguesa.Precio;
+            hamburguesaExistente.Ingredientes = hamburguesa.Ingredientes;
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
-
-
-        // DELETE: /Hamburguesa/{id}
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> EliminarHamburguesa(int id)
         {
-            if (!HamburguesaDLL.EliminarHamburguesa(id))
+            var hamburguesa = await _context.Hamburguesas.FindAsync(id);
+            if (hamburguesa == null)
             {
-                return NotFound($"Hamburguesa con ID {id} no encontrada.");
+                return NotFound();
             }
-            return NoContent();
+
+            _context.Hamburguesas.Remove(hamburguesa);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }
