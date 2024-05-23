@@ -1,27 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { eliminarUsuario, obtenerUsuarios } from '../../../servicios/usuario.servicio';
+import { useParams } from 'react-router-dom';
+import { eliminarUsuario } from '../../../servicios/usuario.servicio';
 
 function BorrarUsuario() {
-  const { id } = useParams();
+  const { id } = useParams(); // Obtenemos el parámetro ID de los parámetros de la URL
   const [open, setOpen] = useState(false); // Estado para controlar la apertura/cierre del diálogo de confirmación
-
-  useEffect(() => {
-    const obtenerUsuarioData = async () => {
-      try {
-        const usuarioData = await obtenerUsuarios(id);
-        // Verificar si el usuario existe, si no, redireccionar a la página de listar
-        if (!usuarioData) {
-          // Puedes agregar aquí la lógica para redireccionar
-        }
-      } catch (error) {
-        console.error('Error al obtener usuario:', error.message);
-      }
-    };
-
-    obtenerUsuarioData();
-  }, [id]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -33,17 +17,20 @@ function BorrarUsuario() {
 
   const handleEliminar = async () => {
     try {
-      await eliminarUsuario(id);
-      handleClose(); // Cerrar el diálogo después de eliminar el usuario
+      if (id) {
+        await eliminarUsuario(id);
+        handleClose();
+      } else {
+        console.error('ID de usuario no definido');
+      }
     } catch (error) {
-      console.error('Error al eliminar usuario:', error.message);
+      console.error('Error al eliminar el usuario:', error.message);
     }
   };
 
   return (
     <div>
-      
-      <Button variant="contained" color="error" onClick={handleOpen} style={{ display: 'block', margin: 'auto' }}>
+      <Button variant="contained" color="error" onClick={handleOpen}>
         Eliminar
       </Button>
       {/* Diálogo de confirmación para la eliminación */}
@@ -63,7 +50,7 @@ function BorrarUsuario() {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </div >
   );
 }
 

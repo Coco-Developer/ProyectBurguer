@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled, Box, Form } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 
@@ -77,15 +77,13 @@ function Layout({ children }) {
           </Typography>
         </Toolbar>
       </StyledAppBar>
-      <BackgroundContainer>
-        <Typography variant="h1" component="div" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: '20px' }}>
-          WELCOME!!
-        </Typography>
+      <Box sx={{ flexGrow: 1, mt: 2, mb: 4 }}>
         {children}
-      </BackgroundContainer>
+      </Box>
       <Outlet />
     </div>
   );
 }
 
 export default Layout;
+

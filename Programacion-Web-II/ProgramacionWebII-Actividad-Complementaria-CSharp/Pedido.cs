@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LibreriaDeClases
 {
@@ -11,7 +12,7 @@ namespace LibreriaDeClases
 
         public DateTime Fecha { get; set; }
 
-     
+        [JsonIgnore]
         public List<Hamburguesa> Hamburguesas { get; set; } = new List<Hamburguesa>();
 
         public int UsuarioId { get; set; }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { TextField, Button, Snackbar, Box, Typography, MenuItem } from '@mui/material';
-import { obtenerHamburguesaPorId, editarHamburguesa, listarIngredientes } from '../../../servicios/hamburguesa.servicio';
+import { obtenerHamburguesaPorId, editarHamburguesa } from '../../../servicios/hamburguesa.servicio';
+import { listarIngredientes } from '../../../servicios/ingrediente.servicio';
 
 function EditarHamburguesa() {
   const { id } = useParams();

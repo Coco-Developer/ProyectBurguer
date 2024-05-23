@@ -1,6 +1,7 @@
-﻿
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 
 namespace LibreriaDeClases
@@ -23,6 +24,7 @@ namespace LibreriaDeClases
         [MaxLength(15)]
         public required string Telefono { get; set; }
 
+        [JsonIgnore]
         public List<Pedido> Pedidos { get; set; } = new List<Pedido>();
     }
 }

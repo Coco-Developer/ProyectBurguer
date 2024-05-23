@@ -20,6 +20,11 @@ function ListarHamburguesa() {
     obtenerHamburguesas();
   }, []);
 
+  const calcularPrecioTotal = (hamburguesa) => {
+    const precioIngredientes = hamburguesa.ingredientes.reduce((total, ingrediente) => total + ingrediente.precio, 0);
+    return parseFloat(hamburguesa.precio) + parseFloat(precioIngredientes);
+  };
+
   return (
     <Box display="flex" justifyContent="center" alignItems="center" height="100%">
       <div style={{ padding: '20px', width: '80%' }}>
@@ -32,6 +37,7 @@ function ListarHamburguesa() {
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Nombre</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Precio</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Ingredientes</TableCell>
+                <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Precio Total</TableCell>
                 <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -48,6 +54,7 @@ function ListarHamburguesa() {
                       ))}
                     </ul>
                   </TableCell>
+                  <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{calcularPrecioTotal(hamburguesa)}</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
                     <Button component={Link} to={`/hamburguesas/editar/${hamburguesa.idHamburguesa}`} variant="contained" color="primary" style={{ width: '100px', textTransform: 'none', marginRight: '10px' }}>
                       Editar

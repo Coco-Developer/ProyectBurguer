@@ -1,4 +1,4 @@
-const BASE_URL = 'https://localhost:44328/api/usuarios';
+const BASE_URL = 'https://localhost:44328/api/ingredientes';
 
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -8,7 +8,7 @@ const handleResponse = async (response) => {
   return response.json();
 };
 
-export const listarUsuarios = async () => {
+export const listarIngredientes = async () => {
   try {
     const response = await fetch(BASE_URL, {
       method: 'GET',
@@ -18,51 +18,51 @@ export const listarUsuarios = async () => {
     });
     return handleResponse(response);
   } catch (error) {
-    console.error('Error al obtener los usuarios:', error.message);
+    console.error('Error al obtener los ingredientes:', error.message);
     throw error;
   }
 };
 
-export const agregarUsuario = async (nuevoUsuario) => {
+export const agregarIngrediente = async (nuevoIngrediente) => {
   try {
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(nuevoUsuario)
+      body: JSON.stringify(nuevoIngrediente)
     });
     return handleResponse(response);
   } catch (error) {
-    console.error('Error al agregar el usuario:', error.message);
+    console.error('Error al agregar el ingrediente:', error.message);
     throw error;
   }
 };
 
-export const editarUsuario = async (id, nuevoUsuario) => {
+export const editarIngrediente = async (id, nuevoIngrediente) => {
   try {
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(nuevoUsuario)
+      body: JSON.stringify(nuevoIngrediente)
     });
     return handleResponse(response);
   } catch (error) {
-    console.error('Error al editar el usuario:', error.message);
+    console.error('Error al editar el ingrediente:', error.message);
     throw error;
   }
 };
 
-export const eliminarUsuario = async (id) => {
+export const eliminarIngrediente = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
     });
     return handleResponse(response);
   } catch (error) {
-    console.error('Error al eliminar el usuario:', error.message);
+    console.error('Error al eliminar el ingrediente:', error.message);
     throw error;
   }
 };

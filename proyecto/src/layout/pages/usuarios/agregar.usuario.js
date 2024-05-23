@@ -1,95 +1,89 @@
 import React, { useState } from 'react';
-import { Typography, TextField, Button, Box, Snackbar } from '@mui/material';
+import { Button, TextField, Snackbar, Box, Typography } from '@mui/material';
 import { agregarUsuario } from '../../../servicios/usuario.servicio';
 
 function AgregarUsuario() {
-  const [usuario, setUsuario] = useState({
-    nombre: '',
-    apellido: '',
-    edad: '',
-  });
-
+  const [nombre, setNombre] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setUsuario({
-      ...usuario,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      await agregarUsuario(usuario);
-      setMensaje('Usuario agregado correctamente');
-      setOpenSnackbar(true);
-      // Restablecer los campos del formulario a su estado inicial
-      setUsuario({
-        nombre: '',
-        apellido: '',
-        edad: '',
-      });
-    } catch (error) {
-      console.error('Error al agregar usuario:', error.message);
-      setMensaje('Error al agregar usuario');
-      setOpenSnackbar(true);
-    }
-  };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
+  const handleChangeNombre = (event) => {
+    setNombre(event.target.value);
+  };
+
+  const handleChangeDireccion = (event) => {
+    setDireccion(event.target.value);
+  };
+
+  const handleChangeTelefono = (event) => {
+    setTelefono(event.target.value);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (nombre && direccion && telefono) {
+        await agregarUsuario({ nombre, direccion, telefono });
+        setMensaje('Usuario agregado correctamente');
+        setOpenSnackbar(true);
+        setNombre('');
+        setDireccion('');
+        setTelefono('');
+      } else {
+        setMensaje('Por favor ingresa el nombre, dirección y teléfono del usuario');
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      console.error('Error al agregar el usuario:', error.message);
+      setMensaje('Error al agregar el usuario');
+      setOpenSnackbar(true);
+    }
+  };
+
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-      <div style={{ width: '50%' }}>
-        <Typography variant="h4" style={{ marginBottom: '20px', textAlign: 'center', fontWeight: 'bold' }}>Agregar Usuario</Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            name="nombre"
-            label="Nombre"
-            value={usuario.nombre}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            name="apellido"
-            label="Apellido"
-            value={usuario.apellido}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            name="edad"
-            label="Edad"
-            type="number"
-            value={usuario.edad}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <Button type="submit" variant="contained" color="primary">
-            Guardar
-          </Button>
-        </form>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <Box sx={{ width: '50%', textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom>
+          Agregar Usuario
+        </Typography>
+        <TextField
+          label="Nombre"
+          value={nombre}
+          onChange={handleChangeNombre}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Dirección"
+          value={direccion}
+          onChange={handleChangeDireccion}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Teléfono"
+          value={telefono}
+          onChange={handleChangeTelefono}
+          fullWidth
+          margin="normal"
+        />
+        <Button variant="contained" color="primary" onClick={handleSubmit}>
+          Agregar
+        </Button>
         <Snackbar
           open={openSnackbar}
-          autoHideDuration={3000}
+          autoHideDuration={4000}
           onClose={handleCloseSnackbar}
           message={mensaje}
         />
-      </div>
+      </Box>
     </Box>
   );
 }
 
 export default AgregarUsuario;
-

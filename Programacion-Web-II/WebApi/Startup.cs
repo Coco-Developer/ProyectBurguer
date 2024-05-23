@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using LibreriaDeClases;
+using System.Text.Json.Serialization;
 
 namespace WebApi
 {
@@ -31,6 +32,10 @@ namespace WebApi
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
+                services.AddControllers().AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                });
             });
 
             // Configurar DbContext para usar SQL Server
