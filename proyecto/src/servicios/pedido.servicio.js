@@ -1,22 +1,21 @@
-const BASE_URL = 'https://localhost:44328/api/pedidos';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Error en la solicitud');
+const pedidosCollection = collection(db, 'pedidos');
+
+const handleResponse = async (action) => {
+  try {
+    return await action();
+  } catch (error) {
+    console.error('Error en la solicitud:', error.message);
+    throw error;
   }
-  return response.json();
 };
 
 export const listarPedidos = async () => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
+    const querySnapshot = await getDocs(pedidosCollection);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error al obtener los pedidos:', error.message);
     throw error;
@@ -24,60 +23,38 @@ export const listarPedidos = async () => {
 };
 
 export const agregarPedido = async (nuevoPedido) => {
+  return handleResponse(async () => {
+    const docRef = await addDoc(pedidosCollection, nuevoPedido);
+    return { id: docRef.id, ...nuevoPedido };
+  });
+};
+
+export const obtenerPedidoPorId = async (id) => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoPedido)
-    });
-    return handleResponse(response);
+    const docRef = doc(pedidosCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('No existe el pedido con el ID especificado');
+      return null;
+    }
   } catch (error) {
-    console.error('Error al agregar el pedido:', error.message);
+    console.error('Error al obtener el pedido por ID:', error.message);
     throw error;
   }
 };
 
 export const editarPedido = async (id, nuevoPedido) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoPedido)
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al editar el pedido:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await updateDoc(doc(pedidosCollection, id), nuevoPedido);
+    return { id, ...nuevoPedido };
+  });
 };
 
 export const eliminarPedido = async (id) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al eliminar el pedido:', error.message);
-    throw error;
-  }
-};
-// Nueva función para obtener un pedido por ID
-export const obtenerPedidoPorId = async (id) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al obtener el pedido:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await deleteDoc(doc(pedidosCollection, id));
+    return { id };
+  });
 };

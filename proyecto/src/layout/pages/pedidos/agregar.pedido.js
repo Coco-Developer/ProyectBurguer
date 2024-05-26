@@ -1,134 +1,127 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Snackbar, Box, Typography, TextField, MenuItem } from '@mui/material';
-import { agregarPedido } from '../../../servicios/pedido.servicio';
-import { listarHamburguesas } from '../../../servicios/hamburguesa.servicio';
-
-
+import { Button, Typography, Box, TextField, MenuItem } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
 function AgregarPedido() {
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [direccionUsuario, setDireccionUsuario] = useState('');
-  const [telefonoUsuario, setTelefonoUsuario] = useState('');
-  const [hamburguesasSeleccionadas, setHamburguesasSeleccionadas] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [fecha, setFecha] = useState('');
-  const [mensaje, setMensaje] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [hamburguesasDisponibles, setHamburguesasDisponibles] = useState([]);
+  // Estado para almacenar la lista de usuarios
+  const [usuarios, setUsuarios] = useState([]);
+  // Estado para la dirección seleccionada
+  const [direccion, setDireccion] = useState('');
+  // Estado para la nueva dirección (opcional)
+  const [nuevaDireccion, setNuevaDireccion] = useState('');
+  // Estado para el usuario seleccionado
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  // Estado para las hamburguesas seleccionadas
+  const [hamburguesas, setHamburguesas] = useState([]);
+  // Estado para el total del pedido
+  const [totalPedido, setTotalPedido] = useState(0);
 
+  // Obtener la lista de usuarios al cargar el componente
   useEffect(() => {
-    // Cargar las hamburguesas disponibles al montar el componente
-    listarHamburguesas()
-      .then(data => setHamburguesasDisponibles(data))
-      .catch(error => console.error('Error al obtener las hamburguesas:', error));
+    const obtenerUsuarios = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Usuario'));
+        const usuariosData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setUsuarios(usuariosData);
+      } catch (error) {
+        console.error('Error al obtener los usuarios:', error.message);
+      }
+    };
+
+    obtenerUsuarios();
   }, []);
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
-  const handleSubmit = async () => {
+  // Función para agregar un pedido
+  const handleAgregarPedido = async () => {
     try {
-      if (!nombreUsuario || !direccionUsuario || !telefonoUsuario || !fecha || hamburguesasSeleccionadas.length === 0) {
-        setMensaje('Por favor complete todos los campos');
-        setOpenSnackbar(true);
+      // Validar que se haya seleccionado un usuario y una dirección
+      if (!usuarioSeleccionado || !direccion) {
+        console.error('Por favor completa todos los campos obligatorios.');
         return;
       }
 
-      const nuevoPedido = {
-        nombreUsuario,
-        direccionUsuario,
-        telefonoUsuario,
-        hamburguesas: hamburguesasSeleccionadas.map(hamburguesa => ({ id: hamburguesa.id })),
-        total,
-        fecha
-      };
-
-      await agregarPedido(nuevoPedido);
-      setMensaje('Pedido agregado correctamente');
-      setOpenSnackbar(true);
+      // Agregar el pedido a la base de datos
+      await addDoc(collection(db, 'Pedidos'), {
+        direccion: nuevaDireccion || direccion, // Usar la nueva dirección si se proporciona, de lo contrario, usar la dirección seleccionada
+        usuarioId: usuarioSeleccionado.id,
+        hamburguesas,
+        fecha: serverTimestamp() // Agregar la fecha actual
+      });
+      
+      // Limpiar los campos después de agregar el pedido
+      setDireccion('');
+      setUsuarioSeleccionado(null);
+      setHamburguesas([]);
+      setTotalPedido(0);
+      setNuevaDireccion('');
+      console.log('Pedido agregado exitosamente.');
     } catch (error) {
       console.error('Error al agregar el pedido:', error.message);
-      setMensaje('Error al agregar el pedido');
-      setOpenSnackbar(true);
-    }
-  };
-
-  const handleHamburguesaChange = (event) => {
-    const { value } = event.target;
-    const hamburguesaSeleccionada = hamburguesasDisponibles.find(hamburguesa => hamburguesa.id === value);
-    if (hamburguesaSeleccionada) {
-      const nuevoTotal = total + parseFloat(hamburguesaSeleccionada.precio);
-      setTotal(nuevoTotal);
-      setHamburguesasSeleccionadas([...hamburguesasSeleccionadas, hamburguesaSeleccionada]);
     }
   };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-      <Box sx={{ width: '50%', textAlign: 'center' }}>
-        <Typography variant="h4" gutterBottom>
-          Agregar Pedido
-        </Typography>
-        <TextField
-          label="Nombre del usuario"
-          value={nombreUsuario}
-          onChange={(e) => setNombreUsuario(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Dirección del usuario"
-          value={direccionUsuario}
-          onChange={(e) => setDireccionUsuario(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Teléfono del usuario"
-          value={telefonoUsuario}
-          onChange={(e) => setTelefonoUsuario(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          select
-          label="Hamburguesas"
-          value={hamburguesasSeleccionadas}
-          onChange={handleHamburguesaChange}
-          fullWidth
-          margin="normal"
-        >
-          {hamburguesasDisponibles.map((hamburguesa) => (
-            <MenuItem key={hamburguesa.id} value={hamburguesa.id}>
-              {hamburguesa.nombre} - ${hamburguesa.precio}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          label="Fecha del pedido"
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
-          fullWidth
-          margin="normal"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <Typography variant="body1" gutterBottom>
-          Total: ${total.toFixed(2)}
-        </Typography>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Agregar
-        </Button>
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={4000}
-          onClose={handleCloseSnackbar}
-          message={mensaje}
-        />
-      </Box>
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Agregar Pedido
+      </Typography>
+      {/* Input para la dirección */}
+      <TextField
+        label="Dirección"
+        value={direccion}
+        onChange={(e) => setDireccion(e.target.value)}
+        fullWidth
+        margin="normal"
+      />
+      {/* Input para la nueva dirección (opcional) */}
+      <TextField
+        label="Nueva Dirección (opcional)"
+        value={nuevaDireccion}
+        onChange={(e) => setNuevaDireccion(e.target.value)}
+        fullWidth
+        margin="normal"
+      />
+      {/* Selector para el usuario */}
+      <TextField
+        select
+        label="Usuario"
+        value={usuarioSeleccionado ? usuarioSeleccionado.id : ''}
+        onChange={(e) => {
+          const selectedUser = usuarios.find(user => user.id === e.target.value);
+          setUsuarioSeleccionado(selectedUser);
+          setDireccion(selectedUser.direccion);
+          // Aquí puedes cargar automáticamente otros campos como teléfono si lo deseas
+        }}
+        fullWidth
+        margin="normal"
+      >
+        {usuarios.map((usuario) => (
+          <MenuItem key={usuario.id} value={usuario.id}>
+            {usuario.nombre}
+          </MenuItem>
+        ))}
+      </TextField>
+      {/* Visualización de las hamburguesas seleccionadas */}
+      <Typography variant="h6" gutterBottom>
+        Hamburguesas Seleccionadas
+      </Typography>
+      {hamburguesas.map((hamburguesa, index) => (
+        <Typography key={index} variant="body1">{hamburguesa.nombre}</Typography>
+      ))}
+      {/* Visualización del total del pedido */}
+      <Typography variant="h6" gutterBottom>
+        Total del Pedido: ${totalPedido.toFixed(2)}
+      </Typography>
+      {/* Botón para agregar el pedido */}
+      <Button variant="contained" color="primary" onClick={handleAgregarPedido}>
+        Agregar Pedido
+      </Button>
+      {/* Botón para cancelar y volver a la lista de pedidos */}
+      <Button variant="contained" component={Link} to="/pedidos/listar">
+        Cancelar
+      </Button>
     </Box>
   );
 }

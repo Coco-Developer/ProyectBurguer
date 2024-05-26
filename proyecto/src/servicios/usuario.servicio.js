@@ -1,22 +1,21 @@
-const BASE_URL = 'https://localhost:44328/api/usuarios';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Error en la solicitud');
+const usuariosCollection = collection(db, 'usuarios');
+
+const handleResponse = async (action) => {
+  try {
+    return await action();
+  } catch (error) {
+    console.error('Error en la solicitud:', error.message);
+    throw error;
   }
-  return response.json();
 };
 
 export const listarUsuarios = async () => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
+    const querySnapshot = await getDocs(usuariosCollection);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error al obtener los usuarios:', error.message);
     throw error;
@@ -24,45 +23,38 @@ export const listarUsuarios = async () => {
 };
 
 export const agregarUsuario = async (nuevoUsuario) => {
+  return handleResponse(async () => {
+    const docRef = await addDoc(usuariosCollection, nuevoUsuario);
+    return { id: docRef.id, ...nuevoUsuario };
+  });
+};
+
+export const obtenerUsuarioPorId = async (id) => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoUsuario)
-    });
-    return handleResponse(response);
+    const docRef = doc(usuariosCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('No existe el usuario con el ID especificado');
+      return null;
+    }
   } catch (error) {
-    console.error('Error al agregar el usuario:', error.message);
+    console.error('Error al obtener el usuario por ID:', error.message);
     throw error;
   }
 };
 
 export const editarUsuario = async (id, nuevoUsuario) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoUsuario)
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al editar el usuario:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await updateDoc(doc(usuariosCollection, id), nuevoUsuario);
+    return { id, ...nuevoUsuario };
+  });
 };
 
 export const eliminarUsuario = async (id) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al eliminar el usuario:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await deleteDoc(doc(usuariosCollection, id));
+    return { id };
+  });
 };

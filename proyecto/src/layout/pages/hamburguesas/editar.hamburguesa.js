@@ -1,134 +1,97 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { TextField, Button, Snackbar, Box, Typography, MenuItem } from '@mui/material';
-import { obtenerHamburguesaPorId, editarHamburguesa } from '../../../servicios/hamburguesa.servicio';
-import { listarIngredientes } from '../../../servicios/ingrediente.servicio';
+import { db } from '../../../firebaseConfig';
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
 function EditarHamburguesa() {
   const { id } = useParams();
-  const [hamburguesa, setHamburguesa] = useState({ nombre: '', precio: '', ingredientes: [] });
-  const [editMode, setEditMode] = useState(false);
-  const [mensaje, setMensaje] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [ingredientesDisponibles, setIngredientesDisponibles] = useState([]);
+  const [nombre, setNombre] = useState('');
+  const [precio, setPrecio] = useState('');
+  const [ingredientes, setIngredientes] = useState([]);
+  const [selectedIngredientes, setSelectedIngredientes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    obtenerHamburguesaPorId(id)
-      .then(data => setHamburguesa(data))
-      .catch(error => console.error('Error al obtener la hamburguesa:', error));
+    const fetchHamburguesa = async () => {
+      const docRef = doc(db, 'Hamburguesa', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setNombre(data.nombre);
+        setPrecio(data.precio);
+        setSelectedIngredientes(data.ingredientes.map(ing => ing.nombre));
+      } else {
+        console.log('No such document!');
+      }
+    };
+
+    fetchHamburguesa();
     
-    listarIngredientes()
-      .then(data => setIngredientesDisponibles(data))
-      .catch(error => console.error('Error al obtener los ingredientes:', error));
+    const fetchIngredientes = async () => {
+      const ingredientesCollection = await getDocs(collection(db, 'Ingredientes'));
+      const ingredientesList = ingredientesCollection.docs.map(doc => doc.data().nombre);
+      setIngredientes(ingredientesList);
+    };
+
+    fetchIngredientes();
   }, [id]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setHamburguesa(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleIngredientesChange = (event) => {
-    const { value } = event.target;
-    setHamburguesa(prevState => ({
-      ...prevState,
-      ingredientes: value
-    }));
-  };
-
-  const handleEditClick = () => {
-    setEditMode(true);
-  };
-
-  const handleSaveClick = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const data = {
-        ...hamburguesa,
-        ingredientes: hamburguesa.ingredientes.map(ingrediente => ({ id: ingrediente.id, nombre: ingrediente.nombre }))
-      };
-      await editarHamburguesa(id, data);
-      setMensaje('Hamburguesa actualizada correctamente');
-      setOpenSnackbar(true);
-      setEditMode(false);
+      const ingredientesArray = selectedIngredientes.map(ing => ({ nombre: ing, precio: 0 }));
+      const docRef = doc(db, 'Hamburguesa', id);
+      await updateDoc(docRef, {
+        nombre,
+        precio,
+        ingredientes: ingredientesArray
+      });
+      navigate('/hamburguesas/listar');
     } catch (error) {
-      console.error('Error al editar la hamburguesa:', error.message);
-      setMensaje('Error al editar la hamburguesa');
-      setOpenSnackbar(true);
+      console.error('Error actualizando la hamburguesa:', error.message);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-      <Box sx={{ width: '50%', textAlign: 'center' }}>
-        <Typography variant="h4" gutterBottom>
-          Detalles de la Hamburguesa
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Nombre: {hamburguesa.nombre}
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Precio: {hamburguesa.precio}
-        </Typography>
-        {editMode ? (
-          <div>
-            <TextField
-              label="Nombre"
-              id="nombre" // Añadido el id correspondiente
-              name="nombre"
-              value={hamburguesa.nombre}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="Precio"
-              id="precio" // Añadido el id correspondiente
-              name="precio"
-              value={hamburguesa.precio}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              select
-              label="Ingredientes"
-              id="ingredientes" // Añadido el id correspondiente
-              name="ingredientes"
-              SelectProps={{
-                multiple: true,
-                value: hamburguesa.ingredientes,
-                onChange: handleIngredientesChange,
-              }}
-              fullWidth
-              margin="normal"
-            >
-              {ingredientesDisponibles.map((ingrediente) => (
-                <MenuItem key={ingrediente.id} value={ingrediente}>
-                  {ingrediente.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Button variant="contained" color="primary" onClick={handleSaveClick}>
-              Guardar
-            </Button>
-          </div>
-        ) : (
-          <Button variant="contained" color="primary" onClick={handleEditClick}>
-            Editar
-          </Button>
-        )}
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={4000}
-          onClose={handleCloseSnackbar}
-          message={mensaje}
+    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+      <Box component="form" onSubmit={handleSubmit} sx={{ padding: '20px', width: '50%', textAlign: 'center' }}>
+        <Typography variant="h4" style={{ marginBottom: '20px', fontWeight: 'bold' }}>Editar Hamburguesa</Typography>
+        <TextField
+          label="Nombre"
+          fullWidth
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          margin="normal"
         />
+        <TextField
+          label="Precio"
+          fullWidth
+          type="number"
+          value={precio}
+          onChange={(e) => setPrecio(e.target.value)}
+          margin="normal"
+        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="ingredientes-label">Ingredientes</InputLabel>
+          <Select
+            labelId="ingredientes-label"
+            multiple
+            value={selectedIngredientes}
+            onChange={(e) => setSelectedIngredientes(e.target.value)}
+            fullWidth
+            renderValue={(selected) => selected.join(', ')}
+          >
+            {ingredientes.map((ingrediente) => (
+              <MenuItem key={ingrediente} value={ingrediente}>
+                {ingrediente}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button type="submit" variant="contained" color="primary" style={{ marginTop: '20px' }}>
+          Actualizar
+        </Button>
       </Box>
     </Box>
   );

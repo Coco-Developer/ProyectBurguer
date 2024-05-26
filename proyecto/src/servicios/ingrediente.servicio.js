@@ -1,22 +1,21 @@
-const BASE_URL = 'https://localhost:44328/api/ingredientes';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Error en la solicitud');
+const ingredientesCollection = collection(db, 'ingredientes');
+
+const handleResponse = async (action) => {
+  try {
+    return await action();
+  } catch (error) {
+    console.error('Error en la solicitud:', error.message);
+    throw error;
   }
-  return response.json();
 };
 
 export const listarIngredientes = async () => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
+    const querySnapshot = await getDocs(ingredientesCollection);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error al obtener los ingredientes:', error.message);
     throw error;
@@ -24,45 +23,38 @@ export const listarIngredientes = async () => {
 };
 
 export const agregarIngrediente = async (nuevoIngrediente) => {
+  return handleResponse(async () => {
+    const docRef = await addDoc(ingredientesCollection, nuevoIngrediente);
+    return { id: docRef.id, ...nuevoIngrediente };
+  });
+};
+
+export const obtenerIngredientePorId = async (id) => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoIngrediente)
-    });
-    return handleResponse(response);
+    const docRef = doc(ingredientesCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('No existe el ingrediente con el ID especificado');
+      return null;
+    }
   } catch (error) {
-    console.error('Error al agregar el ingrediente:', error.message);
+    console.error('Error al obtener el ingrediente por ID:', error.message);
     throw error;
   }
 };
 
 export const editarIngrediente = async (id, nuevoIngrediente) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevoIngrediente)
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al editar el ingrediente:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await updateDoc(doc(ingredientesCollection, id), nuevoIngrediente);
+    return { id, ...nuevoIngrediente };
+  });
 };
 
 export const eliminarIngrediente = async (id) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al eliminar el ingrediente:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await deleteDoc(doc(ingredientesCollection, id));
+    return { id };
+  });
 };

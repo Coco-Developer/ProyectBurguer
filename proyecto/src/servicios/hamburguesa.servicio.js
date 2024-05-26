@@ -1,89 +1,67 @@
-const BASE_URL = 'https://localhost:44328/api/hamburguesas';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Error en la solicitud');
+// Colección de hamburguesas
+const hamburguesasCollection = collection(db, 'hamburguesas');
+
+// Función para manejar las respuestas y los errores
+const handleResponse = async (action) => {
+  try {
+    return await action();
+  } catch (error) {
+    console.error('Error en la solicitud:', error.message);
+    throw error;
   }
-  return response.json();
 };
 
+// Función para listar todas las hamburguesas
 export const listarHamburguesas = async () => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
+    const querySnapshot = await getDocs(hamburguesasCollection);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error al obtener las hamburguesas:', error.message);
     throw error;
   }
 };
 
+// Función para agregar una nueva hamburguesa
 export const agregarHamburguesa = async (nuevaHamburguesa) => {
-  try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevaHamburguesa)
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al agregar la hamburguesa:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    const docRef = await addDoc(hamburguesasCollection, nuevaHamburguesa);
+    return { id: docRef.id, ...nuevaHamburguesa };
+  });
 };
 
+// Función para obtener una hamburguesa por su ID
 export const obtenerHamburguesaPorId = async (id) => {
   try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return handleResponse(response);
+    const docRef = doc(hamburguesasCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('No existe la hamburguesa con el ID especificado');
+      return null;
+    }
   } catch (error) {
     console.error('Error al obtener la hamburguesa por ID:', error.message);
     throw error;
   }
 };
 
-
+// Función para editar una hamburguesa
 export const editarHamburguesa = async (id, nuevaHamburguesa) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(nuevaHamburguesa)
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al editar la hamburguesa:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await updateDoc(doc(hamburguesasCollection, id), nuevaHamburguesa);
+    return { id, ...nuevaHamburguesa };
+  });
 };
 
+// Función para eliminar una hamburguesa
 export const eliminarHamburguesa = async (id) => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: 'DELETE',
-    });
-    return handleResponse(response);
-  } catch (error) {
-    console.error('Error al eliminar la hamburguesa:', error.message);
-    throw error;
-  }
+  return handleResponse(async () => {
+    await deleteDoc(doc(hamburguesasCollection, id));
+    return { id };
+  });
 };
-
-
-
-
-

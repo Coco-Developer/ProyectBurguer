@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { listarPedidos, eliminarPedido } from '../../../servicios/pedido.servicio';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
 
 function ListarPedido() {
   const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
-    listarPedidos()
-      .then(data => setPedidos(data))
-      .catch(error => console.error('Error al listar los pedidos:', error));
+    const obtenerPedidos = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Pedidos'));
+        const pedidosData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPedidos(pedidosData);
+      } catch (error) {
+        console.error('Error al obtener los pedidos:', error.message);
+      }
+    };
+
+    obtenerPedidos();
   }, []);
 
   const handleEliminar = async (id) => {
     try {
-      await eliminarPedido(id);
+      await deleteDoc(doc(db, 'Pedidos', id));
       setPedidos(prevPedidos => prevPedidos.filter(pedido => pedido.id !== id));
     } catch (error) {
-      console.error('Error al eliminar el pedido:', error);
+      console.error('Error al eliminar el pedido:', error.message);
     }
   };
 
@@ -34,7 +43,7 @@ function ListarPedido() {
           <TableHead>
             <TableRow>
               <TableCell>ID Pedido</TableCell>
-              <TableCell>Nombre Usuario</TableCell>
+              <TableCell>Usuario</TableCell>
               <TableCell>Dirección</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Hamburguesas</TableCell>
@@ -48,15 +57,17 @@ function ListarPedido() {
                 <TableCell>{pedido.id}</TableCell>
                 <TableCell>{pedido.usuario.nombre}</TableCell>
                 <TableCell>{pedido.direccion}</TableCell>
-                <TableCell>{new Date(pedido.fecha).toLocaleDateString()}</TableCell>
+                <TableCell>{pedido.fecha.toDate().toLocaleDateString()}</TableCell> {/* Corrige el acceso a la fecha */}
                 <TableCell>
-                  {pedido.hamburguesas.map((hamburguesa, index) => (
-                    <div key={index}>
-                      {hamburguesa.nombre} - {hamburguesa.cantidad}
-                    </div>
-                  ))}
+                  <ul>
+                    {pedido.hamburguesas.map((hamburguesa, index) => (
+                      <li key={index}>{hamburguesa.nombre} - Cantidad: {hamburguesa.cantidad}</li>
+                    ))}
+                  </ul>
                 </TableCell>
-                <TableCell>{pedido.hamburguesas.reduce((acc, curr) => acc + curr.precio * curr.cantidad, 0)}</TableCell>
+                <TableCell>
+                  ${pedido.hamburguesas.reduce((total, hamburguesa) => total + (hamburguesa.precio * hamburguesa.cantidad), 0).toFixed(2)}
+                </TableCell>
                 <TableCell>
                   <Button variant="contained" color="primary" component={Link} to={`/pedidos/editar/${pedido.id}`}>
                     Editar

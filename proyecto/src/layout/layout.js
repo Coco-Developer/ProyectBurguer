@@ -1,32 +1,36 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled, Box, Form } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, styled, Box, Container, Grid } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 
-// Estilo personalizado para el AppBar
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  padding: theme.spacing(1, 2),
+  backgroundColor: theme.palette.primary.main,
 }));
 
-// Personalizamos el estilo del menú desplegable
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
-    backgroundColor: '#34495e',
+    backgroundColor: theme.palette.primary.main,
   },
   '& .MuiMenuItem-root': {
-    color: '#ffffff',
+    color: theme.palette.common.white,
   },
 }));
 
-// Estilo para el contenedor del fondo
-const BackgroundContainer = styled(Box)({
-  height: '5%',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#black',
-});
+const Logo = styled(Typography)(({ theme }) => ({
+  fontFamily: 'Roboto, sans-serif',
+  fontWeight: 700,
+  textAlign: 'center',
+  flexGrow: 1,
+  [theme.breakpoints.down('sm')]: {
+    flexGrow: 0,
+  },
+}));
+
+const Footer = styled(Typography)(({ theme }) => ({
+  textAlign: 'center',
+  marginTop: theme.spacing(4),
+  color: theme.palette.text.secondary,
+}));
 
 function Layout({ children }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -40,50 +44,58 @@ function Layout({ children }) {
   };
 
   return (
-    <div>
-      <StyledAppBar position="static" sx={{ backgroundColor: '#2c3e50' }}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleMenuOpen}
-          >
-            <MenuIcon />
-          </IconButton>
-          <StyledMenu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem component={Link} to="/hamburguesas/listar" onClick={handleMenuClose}>Hamburguesas</MenuItem>
-            <MenuItem component={Link} to="/usuarios/listar" onClick={handleMenuClose}>Usuarios</MenuItem>
-            <MenuItem component={Link} to="/pedidos/listar" onClick={handleMenuClose}>Pedidos</MenuItem>
-          </StyledMenu>
-          <Typography variant="h6" component={Link} to="/" sx={{ textDecoration: 'none', color: 'inherit', flexGrow: 1, fontFamily: 'Roboto, sans-serif', fontWeight: 700, textAlign: 'right' }}>
-            PROYECTO BURGUER
-          </Typography>
-        </Toolbar>
+    <Box>
+      <StyledAppBar position="static">
+        <Container>
+          <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenuOpen}
+            >
+              <MenuIcon />
+            </IconButton>
+            <StyledMenu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem component={Link} to="/hamburguesas/listar" onClick={handleMenuClose}>Hamburguesas</MenuItem>
+              <MenuItem component={Link} to="/ingredientes/listar" onClick={handleMenuClose}>Ingredientes</MenuItem>
+              <MenuItem component={Link} to="/usuarios/listar" onClick={handleMenuClose}>Usuarios</MenuItem>
+              <MenuItem component={Link} to="/pedidos/listar" onClick={handleMenuClose}>Pedidos</MenuItem>
+            </StyledMenu>
+            <Logo component={Link} to="/" variant="h6">
+              PROYECTO BURGUER
+            </Logo>
+          </Toolbar>
+        </Container>
       </StyledAppBar>
-      <Box sx={{ flexGrow: 1, mt: 2, mb: 4 }}>
-        {children}
-      </Box>
-      <Outlet />
-    </div>
+      <Container sx={{ mt: 2, mb: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Outlet />
+          </Grid>
+        </Grid>
+      </Container>
+      <Footer variant="body2">
+        LAZARO JOAQUIN 29009 - PROGRAMACION WEB II
+      </Footer>
+    </Box>
   );
 }
 
 export default Layout;
-

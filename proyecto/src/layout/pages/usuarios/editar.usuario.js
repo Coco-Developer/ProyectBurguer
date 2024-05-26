@@ -1,34 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { Button, Typography, Box, TextField } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { collection, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig'; // Ajusta la ruta de importación según la ubicación de tu archivo de configuración de Firebase
 
-function AgregarUsuario() {
+function EditarUsuario() {
+  const { id } = useParams();
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
 
-  const handleAgregarUsuario = async () => {
+  useEffect(() => {
+    const obtenerUsuario = async () => {
+      try {
+        const docRef = doc(db, 'Usuario', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setNombre(data.nombre);
+          setDireccion(data.direccion);
+          setTelefono(data.telefono);
+        } else {
+          console.error('No existe el usuario con el ID especificado');
+        }
+      } catch (error) {
+        console.error('Error al obtener el usuario:', error.message);
+      }
+    };
+
+    obtenerUsuario();
+  }, [id]);
+
+  const handleActualizarUsuario = async () => {
     try {
-      await addDoc(collection(db, 'Usuario'), {
+      await updateDoc(doc(db, 'usuarios', id), {
         nombre,
         direccion,
         telefono
       });
-      // Limpiar los campos después de agregar el usuario
-      setNombre('');
-      setDireccion('');
-      setTelefono('');
     } catch (error) {
-      console.error('Error al agregar el usuario:', error.message);
+      console.error('Error al actualizar el usuario:', error.message);
     }
   };
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Agregar Usuario
+        Editar Usuario
       </Typography>
       <TextField
         label="Nombre"
@@ -51,8 +69,8 @@ function AgregarUsuario() {
         fullWidth
         margin="normal"
       />
-      <Button variant="contained" color="primary" onClick={handleAgregarUsuario}>
-        Agregar Usuario
+      <Button variant="contained" color="primary" onClick={handleActualizarUsuario}>
+        Actualizar Usuario
       </Button>
       <Button variant="contained" component={Link} to="/usuarios/listar">
         Cancelar
@@ -61,5 +79,4 @@ function AgregarUsuario() {
   );
 }
 
-export default AgregarUsuario;
-
+export default EditarUsuario;
