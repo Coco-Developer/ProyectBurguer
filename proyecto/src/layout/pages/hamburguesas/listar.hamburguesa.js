@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TableBody, TableCell, TableRow, Paper, Button, Typography, TableContainer, Table, TableHead, Box, CircularProgress } from '@mui/material';
+import { TableBody, TableCell, TableRow, Paper, Button, Typography, TableContainer, Table, TableHead, Box, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { db } from '../../../firebaseConfig';
 import { collection, getDocs, doc, deleteDoc, getDoc } from 'firebase/firestore';
 
@@ -8,6 +8,9 @@ function ListarHamburguesa() {
   const [hamburguesas, setHamburguesas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   useEffect(() => {
     const obtenerHamburguesas = async () => {
@@ -54,9 +57,19 @@ function ListarHamburguesa() {
     try {
       await deleteDoc(doc(db, 'Hamburguesa', id));
       setHamburguesas(hamburguesas.filter(hamburguesa => hamburguesa.id !== id));
+      setSnackbarMessage('Hamburguesa eliminada correctamente');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
     } catch (error) {
       console.error('Error al eliminar la hamburguesa:', error.message);
+      setSnackbarMessage('Error al eliminar la hamburguesa');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -72,36 +85,47 @@ function ListarHamburguesa() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '10%' }}>ID</TableCell>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Nombre</TableCell>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Precio</TableCell>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Ingredientes</TableCell>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Precio Total</TableCell>
-                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center' }}>Acciones</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '2%' }}>ID</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '20%' }}>Nombre</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '10%' }}>Precio</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '38%' }}>Ingredientes</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '15%' }}>Precio Total</TableCell>
+                  <TableCell style={{ fontWeight: 'bold', border: '1px solid #000', textAlign: 'center', width: '15%' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {hamburguesas.length > 0 ? (
                   hamburguesas.map((hamburguesa) => (
                     <TableRow key={hamburguesa.id}>
-                      <TableCell style={{ border: '1px solid #000', textAlign: 'center', width: '10%' }}>{hamburguesa.id}</TableCell>
+                      <TableCell style={{ border: '1px solid #000', textAlign: 'center', fontSize: '0.33rem' }}>{hamburguesa.id}</TableCell>
                       <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.nombre}</TableCell>
-                      <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.precio || 'N/A'}</TableCell>
+                      <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{hamburguesa.precio || 'N/A'} $</TableCell>
                       <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
-                        <ul>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                           {(hamburguesa.ingredientes || []).map((ingrediente, index) => (
                             <li key={index}>
-                              {ingrediente.nombre} - {ingrediente.precio || 'N/A'}
+                              {ingrediente.nombre} - {ingrediente.precio || 'N/A'} $
                             </li>
                           ))}
                         </ul>
                       </TableCell>
-                      <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{calcularPrecioTotal(hamburguesa).toFixed(2)}</TableCell>
+                      <TableCell style={{ border: '1px solid #000', textAlign: 'center', fontStyle: 'oblique', fontWeight: 'bold' }}>{calcularPrecioTotal(hamburguesa).toFixed(2)} $</TableCell>
                       <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
-                        <Button component={Link} to={`/hamburguesas/editar/${hamburguesa.id}`} variant="contained" color="primary" style={{ width: '100px', textTransform: 'none', marginRight: '10px' }}>
+                        <Button
+                          component={Link}
+                          to={`/hamburguesas/editar/${hamburguesa.id}`}
+                          variant="contained"
+                          color="primary"
+                          style={{ margin: '2px' }}
+                        >
                           Editar
                         </Button>
-                        <Button variant="contained" color="secondary" style={{ width: '100px', textTransform: 'none' }} onClick={() => handleDelete(hamburguesa.id)}>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          style={{ margin: '2px' }}
+                          onClick={() => handleDelete(hamburguesa.id)}
+                        >
                           Borrar
                         </Button>
                       </TableCell>
@@ -122,6 +146,11 @@ function ListarHamburguesa() {
           </Box>
         </div>
       )}
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TableBody, TableCell, TableRow, Paper, Button, Typography, TableContainer, Table, TableHead, Box } from '@mui/material';
+import { TableBody, TableCell, TableRow, Paper, Button, Typography, TableContainer, Table, TableHead, Box, Snackbar, Alert } from '@mui/material';
 import { db } from '../../../firebaseConfig';
 import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
 function ListarIngredientes() {
   const [ingredientes, setIngredientes] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
     const obtenerIngredientes = async () => {
@@ -28,9 +31,19 @@ function ListarIngredientes() {
     try {
       await deleteDoc(doc(db, 'Ingredientes', id));
       setIngredientes(ingredientes.filter(ingrediente => ingrediente.id !== id));
+      setSnackbarSeverity('success');
+      setSnackbarMessage('Ingrediente eliminado correctamente');
+      setOpenSnackbar(true);
     } catch (error) {
       console.error('Error al eliminar el ingrediente:', error.message);
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error al eliminar el ingrediente');
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -50,9 +63,9 @@ function ListarIngredientes() {
             <TableBody>
               {ingredientes.map((ingrediente) => (
                 <TableRow key={ingrediente.id}>
-                  <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{ingrediente.id}</TableCell>
+                  <TableCell style={{ border: '1px solid #000', textAlign: 'center', fontSize: '0.66rem' }}>{ingrediente.id}</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{ingrediente.nombre}</TableCell>
-                  <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{ingrediente.precio}</TableCell>
+                  <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>{ingrediente.precio}$</TableCell>
                   <TableCell style={{ border: '1px solid #000', textAlign: 'center' }}>
                     <Button component={Link} to={`/ingredientes/editar/${ingrediente.id}`} variant="contained" color="primary" style={{ width: '100px', textTransform: 'none', marginRight: '10px' }}>
                       Editar
@@ -71,6 +84,15 @@ function ListarIngredientes() {
             Agregar Ingrediente
           </Button>
         </Box>
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={2000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </div>
     </Box>
   );

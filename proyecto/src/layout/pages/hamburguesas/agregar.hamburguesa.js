@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebaseConfig';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel, Snackbar } from '@mui/material';
+import { collection, addDoc, getDocs, doc } from 'firebase/firestore';
+import { useNavigate, Link } from 'react-router-dom';
+import { Box, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel, Snackbar, Alert } from '@mui/material';
 
 function AgregarHamburguesa() {
   const [nombre, setNombre] = useState('');
@@ -10,8 +10,9 @@ function AgregarHamburguesa() {
   const [ingredientes, setIngredientes] = useState([]);
   const [precioTotal, setPrecioTotal] = useState(0);
   const [ingredientesData, setIngredientesData] = useState([]);
-  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-  const [openErrorSnackbar, setOpenErrorSnackbar] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // success or error
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,17 +30,19 @@ function AgregarHamburguesa() {
   }, []);
 
   const handleIngredientesChange = (e) => {
-    setIngredientes(e.target.value);
-    const total = e.target.value.reduce((acc, ingredienteId) => {
+    const selectedIngredientes = e.target.value;
+    setIngredientes(selectedIngredientes);
+
+    const total = selectedIngredientes.reduce((acc, ingredienteId) => {
       const ingrediente = ingredientesData.find(ing => ing.id === ingredienteId);
       return acc + (ingrediente ? parseFloat(ingrediente.precio) : 0);
     }, parseFloat(precioBase));
+
     setPrecioTotal(total);
   };
 
   const handleCloseSnackbar = () => {
-    setOpenSuccessSnackbar(false);
-    setOpenErrorSnackbar(false);
+    setOpenSnackbar(false);
   };
 
   const handleSubmit = async (e) => {
@@ -48,22 +51,26 @@ function AgregarHamburguesa() {
       const hamburguesaData = {
         nombre,
         precio: parseFloat(precioBase),
-        ingredientes: ingredientes.map(id => db.doc(`Ingredientes/${id}`)),
+        ingredientes: ingredientes.map(id => doc(db, `Ingredientes/${id}`)),
       };
       await addDoc(collection(db, 'Hamburguesa'), hamburguesaData);
-      setOpenSuccessSnackbar(true);
+      setSnackbarMessage('Hamburguesa agregada correctamente');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
       setTimeout(() => {
         navigate('/hamburguesas/listar');
       }, 2000);
     } catch (error) {
       console.error('Error añadiendo la hamburguesa:', error.message);
-      setOpenErrorSnackbar(true);
+      setSnackbarMessage('Error al agregar la hamburguesa');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
     }
   };
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-      <Box component="form" onSubmit={handleSubmit} sx={{ padding: '20px', width: '50%', textAlign: 'center' }}>
+    <Box display="flex" justifyContent="center" alignItems="center" height="65vh" paddingTop={"20px"}>
+      <Box component="form" onSubmit={handleSubmit} sx={{ padding: '20px', width: '50%', textAlign: 'center', bgcolor: 'background.paper', boxShadow: 1, borderRadius: 2 }}>
         <Typography variant="h4" style={{ marginBottom: '20px', fontWeight: 'bold' }}>Agregar Hamburguesa</Typography>
         <TextField
           id="nombre"
@@ -82,11 +89,14 @@ function AgregarHamburguesa() {
           type="number"
           value={precioBase}
           onChange={(e) => {
-            setPrecioBase(e.target.value);
+            const newPrecioBase = parseFloat(e.target.value);
+            setPrecioBase(newPrecioBase);
+
             const total = ingredientes.reduce((acc, ingredienteId) => {
               const ingrediente = ingredientesData.find(ing => ing.id === ingredienteId);
               return acc + (ingrediente ? parseFloat(ingrediente.precio) : 0);
-            }, parseFloat(e.target.value));
+            }, newPrecioBase);
+
             setPrecioTotal(total);
           }}
           margin="normal"
@@ -101,11 +111,14 @@ function AgregarHamburguesa() {
             value={ingredientes}
             onChange={handleIngredientesChange}
             label="Ingredientes"
-            renderValue={(selected) => selected.map((id) => ingredientesData.find(ing => ing.id === id).nombre).join(', ')}
+            renderValue={(selected) => selected.map((id) => {
+              const ingrediente = ingredientesData.find(ing => ing.id === id);
+              return ingrediente ? `${ingrediente.nombre} - ${ingrediente.precio} $` : '';
+            }).join(', ')}
           >
             {ingredientesData.map((ingrediente) => (
               <MenuItem key={ingrediente.id} value={ingrediente.id}>
-                {ingrediente.nombre}
+                {ingrediente.nombre} - {ingrediente.precio} $
               </MenuItem>
             ))}
           </Select>
@@ -116,18 +129,15 @@ function AgregarHamburguesa() {
         <Button type="submit" variant="contained" color="primary" style={{ marginTop: '20px' }}>
           Agregar
         </Button>
-        <Snackbar
-          open={openSuccessSnackbar}
-          autoHideDuration={2000}
-          onClose={handleCloseSnackbar}
-          message="Hamburguesa agregada correctamente"
-        />
-        <Snackbar
-          open={openErrorSnackbar}
-          autoHideDuration={2000}
-          onClose={handleCloseSnackbar}
-          message="Error al agregar la hamburguesa"
-        />
+        <br /><br />
+        <Button component={Link} to="/hamburguesas/listar" variant="contained" color="secondary">
+          Volver a la Lista de Hamburguesas
+        </Button>
+        <Snackbar open={openSnackbar} autoHideDuration={2000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

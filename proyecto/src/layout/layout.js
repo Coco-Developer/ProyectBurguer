@@ -78,7 +78,7 @@ function Layout({ children }) {
               <MenuItem component={Link} to="/usuarios/listar" onClick={handleMenuClose}>Usuarios</MenuItem>
               <MenuItem component={Link} to="/pedidos/listar" onClick={handleMenuClose}>Pedidos</MenuItem>
             </StyledMenu>
-            <Logo component={Link} to="/" variant="h6">
+            <Logo component={Link} to="/" variant="h6"  color="WHITE">
               PROYECTO BURGUER
             </Logo>
           </Toolbar>
